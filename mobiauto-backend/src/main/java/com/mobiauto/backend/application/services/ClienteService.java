@@ -1,9 +1,11 @@
 package com.mobiauto.backend.application.services;
 import com.mobiauto.backend.domain.exceptions.Cliente.EmailAlreadyExistsException;
+import com.mobiauto.backend.domain.exceptions.Cliente.ClienteNotFoundException;
 import com.mobiauto.backend.domain.models.Cliente;
 import com.mobiauto.backend.domain.repositories.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,12 +24,14 @@ public class ClienteService {
     }
 
     public Cliente findById(Long id) {
-        return clienteRepository.findById(id).orElseThrow(() -> new RuntimeException("Cliente not found"));
+        return clienteRepository.findById(id)
+                .filter(Cliente::isAtivo)
+                .orElseThrow(ClienteNotFoundException::new);
     }
 
     public Cliente createCliente(Cliente cliente) {
         if (clienteRepository.existsByEmail(cliente.getEmail())) {
-            throw new EmailAlreadyExistsException("E-mail já cadastrado: " + cliente.getEmail());
+            throw new EmailAlreadyExistsException();
         }
         return clienteRepository.save(cliente);
     }
