@@ -7,6 +7,7 @@ import com.mobiauto.backend.application.dtos.Cliente.UpdateClienteDTO;
 import com.mobiauto.backend.application.mappers.ClienteMapper;
 import com.mobiauto.backend.application.services.ClienteService;
 import com.mobiauto.backend.domain.models.Cliente;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +42,7 @@ public class ClienteController {
     }
 
     @PostMapping
-    public ResponseEntity<ClienteDTO> createCliente(@RequestBody CreateClienteDTO createClienteDTO) {
+    public ResponseEntity<ClienteDTO> createCliente(@Valid @RequestBody CreateClienteDTO createClienteDTO) {
         Cliente cliente = clienteMapper.toEntity(createClienteDTO);
         Cliente savedCliente = clienteService.save(cliente);
         return ResponseEntity.ok(clienteMapper.toDTO(savedCliente));
