@@ -28,11 +28,9 @@ public class ClienteMapper {
         return cliente;
     }
 
-    public Cliente toEntity(UpdateClienteDTO dto) {
-        Cliente cliente = new Cliente();
+    public void updateEntityFromDTO(UpdateClienteDTO dto, Cliente cliente) {
         cliente.setNome(dto.nome());
         cliente.setEmail(dto.email());
         cliente.setTelefone(dto.telefone());
-        return cliente;
     }
 }

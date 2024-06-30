@@ -1,62 +1,59 @@
 package com.mobiauto.backend.presentation.controllers;
 
-
 import com.mobiauto.backend.application.dtos.Cliente.ClienteDTO;
 import com.mobiauto.backend.application.dtos.Cliente.CreateClienteDTO;
 import com.mobiauto.backend.application.dtos.Cliente.UpdateClienteDTO;
-import com.mobiauto.backend.application.mappers.ClienteMapper;
 import com.mobiauto.backend.application.services.ClienteService;
-import com.mobiauto.backend.domain.models.Cliente;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/clientes")
 public class ClienteController {
 
     private final ClienteService clienteService;
-    private final ClienteMapper clienteMapper;
 
     @Autowired
-    public ClienteController(ClienteService clienteService, ClienteMapper clienteMapper) {
+    public ClienteController(ClienteService clienteService) {
         this.clienteService = clienteService;
-        this.clienteMapper = clienteMapper;
     }
 
     @GetMapping
     public List<ClienteDTO> getAllActiveClientes() {
-        return clienteService.findAllActive().stream()
-                .map(clienteMapper::toDTO)
-                .collect(Collectors.toList());
+        return clienteService.findAllActive();
+    }
+
+    @GetMapping("/inativos")
+    public List<ClienteDTO> getAllInactiveClientes() {
+        return clienteService.findAllInactive();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ClienteDTO> getClienteById(@PathVariable Long id) {
-        Cliente cliente = clienteService.findById(id);
-        return ResponseEntity.ok(clienteMapper.toDTO(cliente));
+        ClienteDTO clienteDTO = clienteService.findById(id);
+        return ResponseEntity.ok(clienteDTO);
     }
 
     @PostMapping
     public ResponseEntity<ClienteDTO> createCliente(@Valid @RequestBody CreateClienteDTO createClienteDTO) {
-        Cliente cliente = clienteMapper.toEntity(createClienteDTO);
-        Cliente savedCliente = clienteService.createCliente(cliente);
-        return ResponseEntity.ok(clienteMapper.toDTO(savedCliente));
+        ClienteDTO clienteDTO = clienteService.createCliente(createClienteDTO);
+        return ResponseEntity.ok(clienteDTO);
+    }
+
+    @PostMapping("/{id}/reativar")
+    public ResponseEntity<ClienteDTO> reactivateCliente(@PathVariable Long id) {
+        ClienteDTO reativadoClienteDTO = clienteService.reativarCliente(id);
+        return ResponseEntity.ok(reativadoClienteDTO);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ClienteDTO> updateCliente(@PathVariable Long id, @RequestBody UpdateClienteDTO updateClienteDTO) {
-        Cliente existingCliente = clienteService.findById(id);
-        existingCliente.setNome(updateClienteDTO.nome());
-        existingCliente.setEmail(updateClienteDTO.email());
-        existingCliente.setTelefone(updateClienteDTO.telefone());
-        Cliente updatedCliente = clienteService.save(existingCliente);
-        return ResponseEntity.ok(clienteMapper.toDTO(updatedCliente));
+    public ResponseEntity<ClienteDTO> updateCliente(@PathVariable Long id, @Valid @RequestBody UpdateClienteDTO updateClienteDTO) {
+        ClienteDTO updatedClienteDTO = clienteService.updateCliente(id, updateClienteDTO);
+        return ResponseEntity.ok(updatedClienteDTO);
     }
 
     @DeleteMapping("/{id}")
@@ -65,4 +62,3 @@ public class ClienteController {
         return ResponseEntity.noContent().build();
     }
 }
-

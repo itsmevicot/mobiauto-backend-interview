@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     List<Cliente> findAllByAtivoTrue();
+    List<Cliente> findAllByAtivoFalse();
+    Cliente findByEmail(String email);
     boolean existsByEmail(String email);
 }
