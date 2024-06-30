@@ -29,4 +29,8 @@ public class Veiculo {
 
     @Column(nullable = false)
     private boolean ativo = true;
+
+    @ManyToOne
+    private Revenda revenda;
+
 }

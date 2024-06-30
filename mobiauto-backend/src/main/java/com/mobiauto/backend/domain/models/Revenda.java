@@ -35,6 +35,9 @@ public class Revenda {
     @OneToMany(mappedBy = "revenda")
     private List<Oportunidade> oportunidades;
 
+    @OneToMany(mappedBy = "revenda")
+    private List<Veiculo> veiculos;
+
     @Column(nullable = false)
     private boolean ativo = true;
 }

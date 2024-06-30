@@ -30,6 +30,4 @@ public class Cargo {
     )
     private List<Permissao> permissoes;
 
-    @Column(nullable = false)
-    private boolean ativo = true;
 }

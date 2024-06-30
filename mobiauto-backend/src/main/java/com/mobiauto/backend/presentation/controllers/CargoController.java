@@ -19,11 +19,6 @@ public class CargoController {
         this.cargoService = cargoService;
     }
 
-    @GetMapping
-    public List<Cargo> getAllActiveCargos() {
-        return cargoService.findAllActive();
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<Cargo> getCargoById(@PathVariable Long id) {
         Cargo cargo = cargoService.findById(id);
@@ -46,8 +41,8 @@ public class CargoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCargo(@PathVariable Long id, @RequestParam(defaultValue = "false") boolean hardDelete) {
-        cargoService.delete(id, hardDelete);
+    public ResponseEntity<Void> deleteCargo(@PathVariable Long id) {
+        cargoService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

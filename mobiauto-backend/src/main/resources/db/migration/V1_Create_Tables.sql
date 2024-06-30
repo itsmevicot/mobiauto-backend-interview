@@ -11,14 +11,12 @@ CREATE TABLE cliente (
 CREATE TABLE cargo (
                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
                        nome VARCHAR(50) NOT NULL,  -- Storing enum as String
-                       ativo BOOLEAN NOT NULL DEFAULT true
 );
 
 
 CREATE TABLE permissao (
                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
                            descricao VARCHAR(255) NOT NULL UNIQUE,
-                           ativo BOOLEAN NOT NULL DEFAULT true
 );
 
 
@@ -27,7 +25,7 @@ CREATE TABLE revenda (
                          cnpj VARCHAR(20) NOT NULL UNIQUE,
                          codigo VARCHAR(50) NOT NULL UNIQUE,
                          nome_social VARCHAR(255) NOT NULL,
-                         status VARCHAR(50) NOT NULL,  -- Storing enum as String
+                         status VARCHAR(50) NOT NULL,
                          ativo BOOLEAN NOT NULL DEFAULT true
 );
 
@@ -49,7 +47,9 @@ CREATE TABLE veiculo (
                          modelo VARCHAR(255) NOT NULL,
                          versao VARCHAR(255) NOT NULL,
                          ano_modelo INT NOT NULL,
-                         ativo BOOLEAN NOT NULL DEFAULT true
+                         ativo BOOLEAN NOT NULL DEFAULT true,
+                         revenda_id BIGINT NOT NULL,
+                         FOREIGN KEY (revenda_id) REFERENCES revenda(id)
 );
 
 

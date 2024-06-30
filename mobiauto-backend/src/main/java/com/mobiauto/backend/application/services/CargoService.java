@@ -1,5 +1,6 @@
 package com.mobiauto.backend.application.services;
 
+import com.mobiauto.backend.domain.exceptions.Cargo.CargoNotFoundException;
 import com.mobiauto.backend.domain.models.Cargo;
 import com.mobiauto.backend.domain.repositories.CargoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,25 +18,16 @@ public class CargoService {
         this.cargoRepository = cargoRepository;
     }
 
-    public List<Cargo> findAllActive() {
-        return cargoRepository.findAllByAtivoTrue();
-    }
-
     public Cargo findById(Long id) {
-        return cargoRepository.findById(id).orElseThrow(() -> new RuntimeException("Cargo not found"));
+        return cargoRepository.findById(id).orElseThrow((CargoNotFoundException::new));
     }
 
     public Cargo save(Cargo cargo) {
         return cargoRepository.save(cargo);
     }
 
-    public void delete(Long id, boolean hardDelete) {
+    public void delete(Long id) {
         Cargo cargo = findById(id);
-        if (hardDelete) {
-            cargoRepository.delete(cargo);
-        } else {
-            cargo.setAtivo(false);
-            cargoRepository.save(cargo);
-        }
+        cargoRepository.delete(cargo);
     }
 }

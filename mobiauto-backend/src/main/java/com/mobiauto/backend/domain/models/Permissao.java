@@ -21,6 +21,4 @@ public class Permissao {
     @ManyToMany(mappedBy = "permissoes")
     private List<Cargo> cargos;
 
-    @Column(nullable = false)
-    private boolean ativo = true;
 }
