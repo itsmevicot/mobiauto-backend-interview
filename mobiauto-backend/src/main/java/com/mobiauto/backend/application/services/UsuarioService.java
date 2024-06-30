@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -67,8 +68,8 @@ public class UsuarioService {
         Usuario existingUsuario = usuarioRepository.findById(id)
                 .orElseThrow(UsuarioNotFoundException::new);
 
-        Usuario usuarioWithSameEmail = usuarioRepository.findByEmail(updateUsuarioDTO.email());
-        if (usuarioWithSameEmail != null && !usuarioWithSameEmail.getId().equals(id)) {
+        Optional<Usuario> optionalUsuarioWithSameEmail = usuarioRepository.findByEmail(updateUsuarioDTO.email());
+        if (optionalUsuarioWithSameEmail.isPresent() && !optionalUsuarioWithSameEmail.get().getId().equals(id)) {
             throw new EmailAlreadyExistsException();
         }
 

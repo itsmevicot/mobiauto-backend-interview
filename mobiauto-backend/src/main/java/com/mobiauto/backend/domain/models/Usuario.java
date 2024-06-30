@@ -3,13 +3,18 @@ package com.mobiauto.backend.domain.models;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
 @Setter
-public class Usuario {
+public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,4 +39,22 @@ public class Usuario {
 
     @Column(nullable = false)
     private boolean ativo = true;
+
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return perfis.stream()
+                .map(perfil -> new SimpleGrantedAuthority(perfil.getCargo().getNome().name()))
+                .collect(Collectors.toList());
+    }
+    @Override
+    public String getPassword() {
+        return senha;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
 }
