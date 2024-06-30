@@ -1,7 +1,10 @@
 package com.mobiauto.backend.presentation.controllers;
 
+import com.mobiauto.backend.application.dtos.Oportunidade.OportunidadeDTO;
+import com.mobiauto.backend.application.dtos.Oportunidade.CreateOportunidadeDTO;
+import com.mobiauto.backend.application.dtos.Oportunidade.UpdateOportunidadeDTO;
 import com.mobiauto.backend.application.services.OportunidadeService;
-import com.mobiauto.backend.domain.models.Oportunidade;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,41 +23,31 @@ public class OportunidadeController {
     }
 
     @GetMapping
-    public List<Oportunidade> getAllOportunidades() {
+    public List<OportunidadeDTO> getAllOportunidades() {
         return oportunidadeService.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Oportunidade> getOportunidadeById(@PathVariable Long id) {
-        Oportunidade oportunidade = oportunidadeService.findById(id);
-        return ResponseEntity.ok(oportunidade);
+    public ResponseEntity<OportunidadeDTO> getOportunidadeById(@PathVariable Long id) {
+        OportunidadeDTO oportunidadeDTO = oportunidadeService.findById(id);
+        return ResponseEntity.ok(oportunidadeDTO);
     }
 
     @PostMapping
-    public Oportunidade createOportunidade(@RequestBody Oportunidade oportunidade) {
-        return oportunidadeService.save(oportunidade);
+    public ResponseEntity<OportunidadeDTO> createOportunidade(@Valid @RequestBody CreateOportunidadeDTO createOportunidadeDTO) {
+        OportunidadeDTO oportunidadeDTO = oportunidadeService.createOportunidade(createOportunidadeDTO);
+        return ResponseEntity.ok(oportunidadeDTO);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Oportunidade> updateOportunidade(@PathVariable Long id, @RequestBody Oportunidade oportunidadeDetails) {
-        Oportunidade oportunidade = oportunidadeService.findById(id);
-        oportunidade.setCodigo(oportunidadeDetails.getCodigo());
-        oportunidade.setStatus(oportunidadeDetails.getStatus());
-        oportunidade.setMotivoConclusao(oportunidadeDetails.getMotivoConclusao());
-        oportunidade.setDataAtribuicao(oportunidadeDetails.getDataAtribuicao());
-        oportunidade.setDataConclusao(oportunidadeDetails.getDataConclusao());
-        oportunidade.setCliente(oportunidadeDetails.getCliente());
-        oportunidade.setRevenda(oportunidadeDetails.getRevenda());
-        oportunidade.setVeiculo(oportunidadeDetails.getVeiculo());
-        oportunidade.setResponsavelAtendimento(oportunidadeDetails.getResponsavelAtendimento());
-        final Oportunidade updatedOportunidade = oportunidadeService.save(oportunidade);
-        return ResponseEntity.ok(updatedOportunidade);
+    public ResponseEntity<OportunidadeDTO> updateOportunidade(@PathVariable Long id, @Valid @RequestBody UpdateOportunidadeDTO updateOportunidadeDTO) {
+        OportunidadeDTO oportunidadeDTO = oportunidadeService.updateOportunidade(id, updateOportunidadeDTO);
+        return ResponseEntity.ok(oportunidadeDTO);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOportunidade(@PathVariable Long id) {
-        oportunidadeService.delete(id);
+        oportunidadeService.deleteOportunidade(id);
         return ResponseEntity.noContent().build();
     }
 }
-

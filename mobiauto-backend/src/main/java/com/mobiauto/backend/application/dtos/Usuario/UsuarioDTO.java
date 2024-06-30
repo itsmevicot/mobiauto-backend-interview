@@ -5,5 +5,6 @@ public record UsuarioDTO(
         String codigo,
         String nome,
         String email,
+        String senha,
         boolean ativo
 ) {}

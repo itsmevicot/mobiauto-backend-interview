@@ -7,5 +7,6 @@ public record VeiculoDTO(
         String modelo,
         String versao,
         int anoModelo,
-        boolean ativo
+        boolean ativo,
+        Long revendaId
 ) {}
