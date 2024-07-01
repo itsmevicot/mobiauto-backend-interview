@@ -22,7 +22,6 @@ public class RevendaMapper {
     public Revenda toEntity(CreateRevendaDTO dto) {
         Revenda revenda = new Revenda();
         revenda.setCnpj(dto.cnpj());
-        revenda.setCodigo(dto.codigo());
         revenda.setNomeSocial(dto.nomeSocial());
         revenda.setAtivo(dto.ativo());
         return revenda;

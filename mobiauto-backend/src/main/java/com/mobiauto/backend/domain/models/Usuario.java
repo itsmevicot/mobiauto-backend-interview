@@ -42,13 +42,14 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private boolean ativo = true;
 
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return perfis.stream()
-                .flatMap(perfil -> perfil.getPermissions().stream())
+                .map(Perfil::getAuthority)
+                .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
     }
+
     @Override
     public String getPassword() {
         return senha;
@@ -58,5 +59,4 @@ public class Usuario implements UserDetails {
     public String getUsername() {
         return email;
     }
-
 }

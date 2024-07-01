@@ -34,7 +34,6 @@ public class CargoController {
     public ResponseEntity<Cargo> updateCargo(@PathVariable Long id, @RequestBody Cargo cargoDetails) {
         Cargo cargo = cargoService.findById(id);
         cargo.setNome(cargoDetails.getNome());
-        cargo.setPermissoes(cargoDetails.getPermissoes());
         cargo.setPerfis(cargoDetails.getPerfis());
         final Cargo updatedCargo = cargoService.save(cargo);
         return ResponseEntity.ok(updatedCargo);

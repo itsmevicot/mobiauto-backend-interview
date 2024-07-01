@@ -15,8 +15,10 @@ import com.mobiauto.backend.domain.repositories.ClienteRepository;
 import com.mobiauto.backend.domain.repositories.RevendaRepository;
 import com.mobiauto.backend.domain.repositories.VeiculoRepository;
 import com.mobiauto.backend.domain.repositories.UsuarioRepository;
-import com.mobiauto.backend.domain.utils.CodeGenerator;
+import com.mobiauto.backend.domain.utils.CodeGeneratorUtil;
+import com.mobiauto.backend.domain.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,20 +34,22 @@ public class OportunidadeService {
     private final RevendaRepository revendaRepository;
     private final VeiculoRepository veiculoRepository;
     private final UsuarioRepository usuarioRepository;
-    private final CodeGenerator codeGenerator;
+    private final CodeGeneratorUtil codeGeneratorUtil;
+    private final SecurityUtils securityUtils;
 
     @Autowired
     public OportunidadeService(OportunidadeRepository oportunidadeRepository, OportunidadeMapper oportunidadeMapper,
                                ClienteRepository clienteRepository, RevendaRepository revendaRepository,
                                VeiculoRepository veiculoRepository, UsuarioRepository usuarioRepository,
-                               CodeGenerator codeGenerator) {
+                               CodeGeneratorUtil codeGeneratorUtil, SecurityUtils securityUtils) {
         this.oportunidadeRepository = oportunidadeRepository;
         this.oportunidadeMapper = oportunidadeMapper;
         this.clienteRepository = clienteRepository;
         this.revendaRepository = revendaRepository;
         this.veiculoRepository = veiculoRepository;
         this.usuarioRepository = usuarioRepository;
-        this.codeGenerator = codeGenerator;
+        this.codeGeneratorUtil = codeGeneratorUtil;
+        this.securityUtils = securityUtils;
     }
 
     public List<OportunidadeDTO> findAll() {
@@ -60,6 +64,13 @@ public class OportunidadeService {
         return oportunidadeMapper.toDTO(oportunidade);
     }
 
+    @PreAuthorize("@securityUtils.isOwnerOfOportunidade(principal, #usuarioId)")
+    public List<OportunidadeDTO> findByUsuario(Long usuarioId) {
+        return oportunidadeRepository.findByResponsavelAtendimentoId(usuarioId).stream()
+                .map(oportunidadeMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public OportunidadeDTO createOportunidade(CreateOportunidadeDTO createOportunidadeDTO) {
         Cliente cliente = clienteRepository.findById(createOportunidadeDTO.clienteId())
@@ -72,7 +83,7 @@ public class OportunidadeService {
                 .orElseThrow(() -> new RuntimeException("Usuario not found")); // Create a custom exception for this if needed
 
         Oportunidade oportunidade = oportunidadeMapper.toEntity(createOportunidadeDTO, cliente, revenda, veiculo, responsavelAtendimento);
-        oportunidade.setCodigo(codeGenerator.generateOportunidadeCodigo());
+        oportunidade.setCodigo(codeGeneratorUtil.generateOportunidadeCodigo());
         oportunidade = oportunidadeRepository.save(oportunidade);
         return oportunidadeMapper.toDTO(oportunidade);
     }

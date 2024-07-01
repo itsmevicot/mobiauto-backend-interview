@@ -7,9 +7,10 @@ import com.mobiauto.backend.application.mappers.RevendaMapper;
 import com.mobiauto.backend.domain.exceptions.Revenda.RevendaNotFoundException;
 import com.mobiauto.backend.domain.models.Revenda;
 import com.mobiauto.backend.domain.repositories.RevendaRepository;
-import com.mobiauto.backend.domain.utils.CodeGenerator;
-import org.aspectj.apache.bcel.classfile.Code;
+import com.mobiauto.backend.domain.utils.CodeGeneratorUtil;
+import com.mobiauto.backend.domain.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,13 +22,16 @@ public class RevendaService {
 
     private final RevendaRepository revendaRepository;
     private final RevendaMapper revendaMapper;
-    private final CodeGenerator codeGenerator;
+    private final CodeGeneratorUtil codeGeneratorUtil;
+    private final SecurityUtils securityUtils;
 
     @Autowired
-    public RevendaService(RevendaRepository revendaRepository, RevendaMapper revendaMapper, CodeGenerator codeGenerator) {
+    public RevendaService(RevendaRepository revendaRepository, RevendaMapper revendaMapper,
+                          CodeGeneratorUtil codeGeneratorUtil, SecurityUtils securityUtils) {
         this.revendaRepository = revendaRepository;
         this.revendaMapper = revendaMapper;
-        this.codeGenerator = codeGenerator;
+        this.codeGeneratorUtil = codeGeneratorUtil;
+        this.securityUtils = securityUtils;
     }
 
     public List<RevendaDTO> findAll() {
@@ -42,10 +46,17 @@ public class RevendaService {
         return revendaMapper.toDTO(revenda);
     }
 
+    @PreAuthorize("@securityUtils.hasAccessToRevenda(principal, #revendaId)")
+    public RevendaDTO findByRevenda(Long revendaId) {
+        Revenda revenda = revendaRepository.findById(revendaId)
+                .orElseThrow(RevendaNotFoundException::new);
+        return revendaMapper.toDTO(revenda);
+    }
+
     @Transactional
     public RevendaDTO createRevenda(CreateRevendaDTO createRevendaDTO) {
         Revenda revenda = revendaMapper.toEntity(createRevendaDTO);
-        revenda.setCodigo(codeGenerator.generateRevendaCodigo());
+        revenda.setCodigo(codeGeneratorUtil.generateRevendaCodigo());
         revenda = revendaRepository.save(revenda);
         return revendaMapper.toDTO(revenda);
     }

@@ -21,13 +21,4 @@ public class Cargo {
 
     @OneToMany(mappedBy = "cargo")
     private List<Perfil> perfis;
-
-    @ManyToMany
-    @JoinTable(
-            name = "CargoPermissao",
-            joinColumns = @JoinColumn(name = "cargo_id"),
-            inverseJoinColumns = @JoinColumn(name = "permissao_id")
-    )
-    private List<Permissao> permissoes;
-
 }

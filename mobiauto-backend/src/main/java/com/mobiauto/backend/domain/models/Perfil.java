@@ -4,10 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -32,11 +28,5 @@ public class Perfil implements GrantedAuthority {
     @Override
     public String getAuthority() {
         return cargo.getNome().name();
-    }
-
-    public Collection<? extends GrantedAuthority> getPermissions() {
-        return cargo.getPermissoes().stream()
-                .map(permissao -> new SimpleGrantedAuthority(permissao.getDescricao()))
-                .collect(Collectors.toList());
     }
 }
