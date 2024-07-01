@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,7 +39,21 @@ public class TokenService {
         }
     }
 
-    public String generateToken(Usuario usuario, Perfil perfil) {
+    public String generateLoginToken(Usuario usuario) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(this.secret);
+            return JWT.create()
+                    .withIssuer("auth-api")
+                    .withSubject(usuario.getEmail())
+                    .withClaim("roles", List.of("LOGIN_ONLY"))
+                    .withExpiresAt(genExpirationDate())
+                    .sign(algorithm);
+        } catch (JWTCreationException exception) {
+            throw new RuntimeException("Erro ao gerar token. Tente novamente.");
+        }
+    }
+
+    public String generatePerfilToken(Usuario usuario, Perfil perfil) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(this.secret);
             String perfilData = perfil != null ? perfil.getRevenda().getCodigo() + "-" + perfil.getCargo().getNome() : "NONE";

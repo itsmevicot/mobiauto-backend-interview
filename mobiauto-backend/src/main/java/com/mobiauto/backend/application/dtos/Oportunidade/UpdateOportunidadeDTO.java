@@ -1,12 +1,13 @@
 package com.mobiauto.backend.application.dtos.Oportunidade;
 
+import com.mobiauto.backend.domain.enums.StatusOportunidadeEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 public record UpdateOportunidadeDTO(
         @NotBlank(message = "O status é obrigatório.")
-        String status,
+        StatusOportunidadeEnum status,
 
         String motivoConclusao,
 

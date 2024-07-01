@@ -46,8 +46,8 @@ public class Usuario implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return perfis.stream()
-                .map(perfil -> new SimpleGrantedAuthority(perfil.getCargo().getNome().name()))
-                .collect(Collectors.toList());
+                .flatMap(perfil -> perfil.getPermissions().stream())
+                .collect(Collectors.toSet());
     }
     @Override
     public String getPassword() {

@@ -4,7 +4,12 @@ import com.mobiauto.backend.application.dtos.Perfil.PerfilDTO;
 import com.mobiauto.backend.application.dtos.Perfil.CreatePerfilDTO;
 import com.mobiauto.backend.application.dtos.Perfil.UpdatePerfilDTO;
 import com.mobiauto.backend.application.mappers.PerfilMapper;
+import com.mobiauto.backend.domain.enums.CargosEnum;
+import com.mobiauto.backend.domain.exceptions.Auth.UnauthorizedException;
+import com.mobiauto.backend.domain.exceptions.Cargo.CargoNotFoundException;
 import com.mobiauto.backend.domain.exceptions.Perfil.PerfilNotFoundException;
+import com.mobiauto.backend.domain.exceptions.Revenda.RevendaNotFoundException;
+import com.mobiauto.backend.domain.exceptions.Usuario.UsuarioNotFoundException;
 import com.mobiauto.backend.domain.models.Perfil;
 import com.mobiauto.backend.domain.models.Revenda;
 import com.mobiauto.backend.domain.models.Usuario;
@@ -51,18 +56,41 @@ public class PerfilService {
     }
 
     @Transactional
-    public PerfilDTO createPerfil(CreatePerfilDTO createPerfilDTO) {
+    public PerfilDTO createPerfil(CreatePerfilDTO createPerfilDTO, Long usuarioIdCriador) {
         Usuario usuario = usuarioRepository.findById(createPerfilDTO.usuarioId())
-                .orElseThrow(() -> new RuntimeException("Usuario not found")); // Create a custom exception for this if needed
+                .orElseThrow(UsuarioNotFoundException::new);
         Revenda revenda = revendaRepository.findById(createPerfilDTO.revendaId())
-                .orElseThrow(() -> new RuntimeException("Revenda not found")); // Create a custom exception for this if needed
+                .orElseThrow(RevendaNotFoundException::new);
         Cargo cargo = cargoRepository.findById(createPerfilDTO.cargoId())
-                .orElseThrow(() -> new RuntimeException("Cargo not found")); // Create a custom exception for this if needed
+                .orElseThrow(CargoNotFoundException::new);
+
+        Usuario usuarioCriador = usuarioRepository.findById(usuarioIdCriador)
+                .orElseThrow(UsuarioNotFoundException::new);
+
+        if (!isAuthorizedToCreatePerfil(usuarioCriador, revenda, cargo)) {
+            throw new UnauthorizedException();
+        }
 
         Perfil perfil = perfilMapper.toEntity(createPerfilDTO, usuario, revenda, cargo);
         perfil = perfilRepository.save(perfil);
         return perfilMapper.toDTO(perfil);
     }
+
+    private boolean isAuthorizedToCreatePerfil(Usuario usuarioCriador, Revenda revenda, Cargo cargo) {
+        for (Perfil perfil : usuarioCriador.getPerfis()) {
+            if (perfil.getRevenda().equals(revenda)) {
+                CargosEnum cargoNome = perfil.getCargo().getNome();
+                System.out.println("Checking cargo: " + cargoNome); // Debug statement
+
+                if (cargoNome == CargosEnum.PROPRIETARIO ||
+                        (cargoNome == CargosEnum.GERENTE && cargo.getNome() == CargosEnum.ASSISTENTE)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     @Transactional
     public PerfilDTO updatePerfil(Long id, UpdatePerfilDTO updatePerfilDTO) {
@@ -70,7 +98,7 @@ public class PerfilService {
                 .orElseThrow(PerfilNotFoundException::new);
 
         Cargo cargo = cargoRepository.findById(updatePerfilDTO.cargoId())
-                .orElseThrow(() -> new RuntimeException("Cargo not found")); // Create a custom exception for this if needed
+                .orElseThrow(CargoNotFoundException::new);
 
         perfilMapper.updateEntityFromDTO(updatePerfilDTO, existingPerfil, cargo);
         existingPerfil = perfilRepository.save(existingPerfil);
@@ -84,3 +112,4 @@ public class PerfilService {
         perfilRepository.delete(perfil);
     }
 }
+

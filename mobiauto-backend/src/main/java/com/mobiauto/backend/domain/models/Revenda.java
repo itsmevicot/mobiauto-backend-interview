@@ -1,7 +1,6 @@
 package com.mobiauto.backend.domain.models;
 
 
-import com.mobiauto.backend.domain.enums.StatusRevendaEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,10 +23,6 @@ public class Revenda {
 
     @Column(nullable = false)
     private String nomeSocial;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private StatusRevendaEnum status;
 
     @OneToMany(mappedBy = "revenda")
     private List<Perfil> perfis;

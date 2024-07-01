@@ -1,10 +1,12 @@
 package com.mobiauto.backend.application.dtos.Revenda;
 
-import com.mobiauto.backend.domain.enums.StatusRevendaEnum;
+import com.mobiauto.backend.domain.enums.StatusOportunidadeEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.br.CNPJ;
 
 public record CreateRevendaDTO(
+        @CNPJ
         @NotBlank(message = "O CNPJ é obrigatório.")
         String cnpj,
 
@@ -15,7 +17,7 @@ public record CreateRevendaDTO(
         String nomeSocial,
 
         @NotNull(message = "O status é obrigatório.")
-        StatusRevendaEnum status,
+        StatusOportunidadeEnum status,
 
         @NotNull(message = "O status ativo é obrigatório.")
         boolean ativo

@@ -15,7 +15,6 @@ public class RevendaMapper {
                 revenda.getCnpj(),
                 revenda.getCodigo(),
                 revenda.getNomeSocial(),
-                revenda.getStatus(),
                 revenda.isAtivo()
         );
     }
@@ -25,7 +24,6 @@ public class RevendaMapper {
         revenda.setCnpj(dto.cnpj());
         revenda.setCodigo(dto.codigo());
         revenda.setNomeSocial(dto.nomeSocial());
-        revenda.setStatus(dto.status());
         revenda.setAtivo(dto.ativo());
         return revenda;
     }
@@ -33,7 +31,6 @@ public class RevendaMapper {
     public void updateEntityFromDTO(UpdateRevendaDTO dto, Revenda revenda) {
         revenda.setCnpj(dto.cnpj());
         revenda.setNomeSocial(dto.nomeSocial());
-        revenda.setStatus(dto.status());
         revenda.setAtivo(dto.ativo());
     }
 }

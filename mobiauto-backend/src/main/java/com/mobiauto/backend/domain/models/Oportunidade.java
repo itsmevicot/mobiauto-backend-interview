@@ -1,6 +1,7 @@
 package com.mobiauto.backend.domain.models;
 
 
+import com.mobiauto.backend.domain.enums.StatusOportunidadeEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,8 +19,9 @@ public class Oportunidade {
     @Column(nullable = false, unique = true)
     private String codigo;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private StatusOportunidadeEnum status;
 
     private String motivoConclusao;
 
