@@ -10,6 +10,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.mobiauto.backend.domain.models.Perfil;
 import com.mobiauto.backend.domain.models.Usuario;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -23,14 +24,13 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
-    public String validateToken(String token) {
+    public DecodedJWT validateToken(String token) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(this.secret);
             JWTVerifier verifier = JWT.require(algorithm)
                     .withIssuer("auth-api")
                     .build();
-            DecodedJWT decodedJWT = verifier.verify(token);
-            return decodedJWT.getPayload();
+            return verifier.verify(token);
         } catch (TokenExpiredException exception) {
             throw new RuntimeException("Sessão expirada. Faça login novamente.");
         } catch (JWTVerificationException exception) {
@@ -42,14 +42,13 @@ public class TokenService {
         try {
             Algorithm algorithm = Algorithm.HMAC256(this.secret);
             String perfilData = perfil != null ? perfil.getRevenda().getCodigo() + "-" + perfil.getCargo().getNome() : "NONE";
-            String token = JWT.create()
+            return JWT.create()
                     .withIssuer("auth-api")
                     .withSubject(usuario.getEmail())
-                    .withClaim("roles", usuario.getAuthorities().stream().map(grantedAuthority -> grantedAuthority.getAuthority()).collect(Collectors.toList()))
+                    .withClaim("roles", usuario.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                     .withClaim("perfil", perfilData)
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
-            return token;
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar token. Tente novamente.");
         }

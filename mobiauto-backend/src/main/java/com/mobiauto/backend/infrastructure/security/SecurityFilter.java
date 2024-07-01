@@ -7,6 +7,7 @@ import com.mobiauto.backend.domain.exceptions.Usuario.UsuarioNotFoundException;
 import com.mobiauto.backend.domain.models.HttpResponse;
 import com.mobiauto.backend.domain.models.Usuario;
 import com.mobiauto.backend.domain.repositories.UsuarioRepository;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +21,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -37,10 +37,8 @@ public class SecurityFilter extends OncePerRequestFilter {
         try {
             var token = this.recoverToken(request);
             if (token != null) {
-                var userJson = tokenService.validateToken(token);
-                ObjectMapper mapper = new ObjectMapper();
-                Map<String, Object> mapUser = mapper.readValue(userJson, Map.class);
-                String email = mapUser.get("sub").toString();
+                DecodedJWT decodedJWT = tokenService.validateToken(token);
+                String email = decodedJWT.getSubject();
                 Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
 
                 if (usuario.isEmpty()) throw new UsuarioNotFoundException();

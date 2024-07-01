@@ -8,6 +8,8 @@ import com.mobiauto.backend.application.services.UsuarioService;
 import com.mobiauto.backend.domain.models.Perfil;
 import com.mobiauto.backend.domain.models.Usuario;
 import com.mobiauto.backend.domain.repositories.PerfilRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final UsuarioService usuarioService;
     private final AuthenticationManager authenticationManager;
@@ -40,6 +44,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+        logger.info("Login attempt for email: {}", loginRequestDTO.email());
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequestDTO.email(), loginRequestDTO.senha())
@@ -51,23 +56,8 @@ public class AuthController {
             String token = tokenService.generateToken(usuario, perfil);
             return ResponseEntity.ok(new LoginResponseDTO(token));
         } catch (AuthenticationException e) {
-            return ResponseEntity.status(401).build();
-        }
-    }
-
-    public static class AuthResponse {
-        private String token;
-
-        public AuthResponse(String token) {
-            this.token = token;
-        }
-
-        public String getToken() {
-            return token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
+            logger.error("Authentication failed for email: {}", loginRequestDTO.email(), e);
+            return ResponseEntity.status(401).body(new LoginResponseDTO("Authentication failed : " + e.getMessage()));
         }
     }
 }

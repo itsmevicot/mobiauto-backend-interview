@@ -8,7 +8,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
@@ -31,8 +33,8 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String senha;
 
-    @OneToMany(mappedBy = "usuario")
-    private List<Perfil> perfis;
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.EAGER)
+    private Set<Perfil> perfis = new HashSet<>();
 
     @OneToMany(mappedBy = "responsavelAtendimento")
     private List<Oportunidade> oportunidades;
