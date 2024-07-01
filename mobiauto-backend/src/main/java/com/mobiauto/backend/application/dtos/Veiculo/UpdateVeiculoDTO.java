@@ -4,9 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record UpdateVeiculoDTO(
-        @NotBlank(message = "O código é obrigatório.")
-        String codigo,
-
         @NotBlank(message = "A marca é obrigatória.")
         String marca,
 

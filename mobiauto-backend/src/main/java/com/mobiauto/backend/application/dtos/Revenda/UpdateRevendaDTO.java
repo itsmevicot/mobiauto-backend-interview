@@ -8,9 +8,6 @@ public record UpdateRevendaDTO(
         @NotBlank(message = "O CNPJ é obrigatório.")
         String cnpj,
 
-        @NotBlank(message = "O código é obrigatório.")
-        String codigo,
-
         @NotBlank(message = "O nome social é obrigatório.")
         String nomeSocial,
 

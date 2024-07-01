@@ -5,9 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 public record UpdateOportunidadeDTO(
-        @NotBlank(message = "O código é obrigatório.")
-        String codigo,
-
         @NotBlank(message = "O status é obrigatório.")
         String status,
 

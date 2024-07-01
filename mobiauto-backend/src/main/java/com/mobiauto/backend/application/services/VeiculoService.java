@@ -10,6 +10,7 @@ import com.mobiauto.backend.domain.models.Veiculo;
 import com.mobiauto.backend.domain.models.Revenda;
 import com.mobiauto.backend.domain.repositories.VeiculoRepository;
 import com.mobiauto.backend.domain.repositories.RevendaRepository;
+import com.mobiauto.backend.domain.utils.CodeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,13 +24,16 @@ public class VeiculoService {
     private final VeiculoRepository veiculoRepository;
     private final RevendaRepository revendaRepository;
     private final VeiculoMapper veiculoMapper;
+    private final CodeGenerator codeGenerator;
 
 
     @Autowired
-    public VeiculoService(VeiculoRepository veiculoRepository, VeiculoMapper veiculoMapper, RevendaRepository revendaRepository) {
+    public VeiculoService(VeiculoRepository veiculoRepository, VeiculoMapper veiculoMapper,
+                          RevendaRepository revendaRepository, CodeGenerator codeGenerator){
         this.veiculoRepository = veiculoRepository;
         this.veiculoMapper = veiculoMapper;
         this.revendaRepository = revendaRepository;
+        this.codeGenerator = codeGenerator;
     }
 
     public List<VeiculoDTO> findAll() {
@@ -50,6 +54,7 @@ public class VeiculoService {
                 .orElseThrow(RevendaNotFoundException::new);
 
         Veiculo veiculo = veiculoMapper.toEntity(createVeiculoDTO, revenda);
+        veiculo.setCodigo(codeGenerator.generateVeiculoCodigo());
         veiculo = veiculoRepository.save(veiculo);
         return veiculoMapper.toDTO(veiculo);
     }

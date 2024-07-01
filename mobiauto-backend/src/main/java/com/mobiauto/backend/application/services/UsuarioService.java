@@ -9,9 +9,11 @@ import com.mobiauto.backend.application.mappers.UsuarioMapper;
 import com.mobiauto.backend.application.mappers.VeiculoMapper;
 import com.mobiauto.backend.domain.exceptions.Usuario.EmailAlreadyExistsException;
 import com.mobiauto.backend.domain.exceptions.Usuario.UsuarioNotFoundException;
+import com.mobiauto.backend.domain.utils.CodeGenerator;
 import com.mobiauto.backend.domain.models.Usuario;
 import com.mobiauto.backend.domain.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,14 +27,18 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
     private final OportunidadeMapper oportunidadeMapper;
-    private final VeiculoMapper veiculoMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final CodeGenerator codeGenerator;
 
     @Autowired
-    public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper, OportunidadeMapper oportunidadeMapper, VeiculoMapper veiculoMapper) {
+    public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper,
+                          OportunidadeMapper oportunidadeMapper, PasswordEncoder passwordEncoder,
+                          CodeGenerator codeGenerator) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioMapper = usuarioMapper;
         this.oportunidadeMapper = oportunidadeMapper;
-        this.veiculoMapper = veiculoMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.codeGenerator = codeGenerator;
     }
 
     public List<UsuarioDTO> findAllActive() {
@@ -59,6 +65,8 @@ public class UsuarioService {
             throw new EmailAlreadyExistsException();
         }
         Usuario usuario = usuarioMapper.toEntity(createUsuarioDTO);
+        usuario.setSenha(passwordEncoder.encode(createUsuarioDTO.senha()));
+        usuario.setCodigo(codeGenerator.generateUsuarioCodigo());
         usuario = usuarioRepository.save(usuario);
         return usuarioMapper.toDTO(usuario);
     }
@@ -74,6 +82,7 @@ public class UsuarioService {
         }
 
         usuarioMapper.updateEntityFromDTO(updateUsuarioDTO, existingUsuario);
+        existingUsuario.setSenha(passwordEncoder.encode(updateUsuarioDTO.senha()));
         existingUsuario = usuarioRepository.save(existingUsuario);
         return usuarioMapper.toDTO(existingUsuario);
     }

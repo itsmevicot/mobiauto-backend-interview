@@ -36,7 +36,6 @@ public class VeiculoMapper {
     }
 
     public void updateEntityFromDTO(UpdateVeiculoDTO dto, Veiculo veiculo, Revenda revenda) {
-        veiculo.setCodigo(dto.codigo());
         veiculo.setMarca(dto.marca());
         veiculo.setModelo(dto.modelo());
         veiculo.setVersao(dto.versao());

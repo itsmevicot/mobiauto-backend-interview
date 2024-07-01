@@ -1,17 +1,19 @@
 package com.mobiauto.backend.presentation.controllers;
 
 import com.mobiauto.backend.application.dtos.Auth.LoginRequestDTO;
+import com.mobiauto.backend.application.dtos.Auth.LoginResponseDTO;
 import com.mobiauto.backend.application.dtos.Usuario.CreateUsuarioDTO;
 import com.mobiauto.backend.application.services.TokenService;
 import com.mobiauto.backend.application.services.UsuarioService;
+import com.mobiauto.backend.domain.models.Perfil;
 import com.mobiauto.backend.domain.models.Usuario;
+import com.mobiauto.backend.domain.repositories.PerfilRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,12 +23,14 @@ public class AuthController {
     private final UsuarioService usuarioService;
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+    private final PerfilRepository perfilRepository;
 
     @Autowired
-    public AuthController(UsuarioService usuarioService, AuthenticationManager authenticationManager, TokenService tokenService) {
+    public AuthController(UsuarioService usuarioService, AuthenticationManager authenticationManager, TokenService tokenService, PerfilRepository perfilRepository) {
         this.usuarioService = usuarioService;
         this.authenticationManager = authenticationManager;
         this.tokenService = tokenService;
+        this.perfilRepository = perfilRepository;
     }
 
     @PostMapping("/register")
@@ -35,23 +39,22 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequestDTO loginRequest) {
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequestDTO) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.senha())
+                    new UsernamePasswordAuthenticationToken(loginRequestDTO.email(), loginRequestDTO.senha())
             );
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
             Usuario usuario = (Usuario) authentication.getPrincipal();
-            String jwt = tokenService.generateToken(usuario);
+            Perfil perfil = perfilRepository.findByUsuarioId(usuario.getId()).orElse(null);
 
-            return ResponseEntity.ok(new AuthResponse(jwt));
+            String token = tokenService.generateToken(usuario, perfil);
+            return ResponseEntity.ok(new LoginResponseDTO(token));
         } catch (AuthenticationException e) {
-            return ResponseEntity.status(401).body("Email ou senha incorretos");
+            return ResponseEntity.status(401).build();
         }
     }
 
-    // Inner class for AuthResponse
     public static class AuthResponse {
         private String token;
 

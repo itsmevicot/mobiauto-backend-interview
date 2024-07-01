@@ -61,8 +61,16 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        List<String> publicPaths = List.of("/api/v1/auth/login", "/api/v1/auth/register");
-        return publicPaths.contains(path);
+        List<String> publicPaths = List.of(
+                "/api/v1/auth/login",
+                "/api/v1/auth/register",
+                "/swagger-ui/",
+                "/v3/api-docs",
+                "/swagger-ui.html",
+                "/v3/api-docs.yaml",
+                "/v3/api-docs/**"
+        );
+        return publicPaths.stream().anyMatch(path::startsWith);
     }
 
     private String recoverToken(HttpServletRequest request) {

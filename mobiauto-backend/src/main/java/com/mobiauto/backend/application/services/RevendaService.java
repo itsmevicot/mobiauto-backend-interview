@@ -7,6 +7,8 @@ import com.mobiauto.backend.application.mappers.RevendaMapper;
 import com.mobiauto.backend.domain.exceptions.Revenda.RevendaNotFoundException;
 import com.mobiauto.backend.domain.models.Revenda;
 import com.mobiauto.backend.domain.repositories.RevendaRepository;
+import com.mobiauto.backend.domain.utils.CodeGenerator;
+import org.aspectj.apache.bcel.classfile.Code;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,11 +21,13 @@ public class RevendaService {
 
     private final RevendaRepository revendaRepository;
     private final RevendaMapper revendaMapper;
+    private final CodeGenerator codeGenerator;
 
     @Autowired
-    public RevendaService(RevendaRepository revendaRepository, RevendaMapper revendaMapper) {
+    public RevendaService(RevendaRepository revendaRepository, RevendaMapper revendaMapper, CodeGenerator codeGenerator) {
         this.revendaRepository = revendaRepository;
         this.revendaMapper = revendaMapper;
+        this.codeGenerator = codeGenerator;
     }
 
     public List<RevendaDTO> findAll() {
@@ -41,6 +45,7 @@ public class RevendaService {
     @Transactional
     public RevendaDTO createRevenda(CreateRevendaDTO createRevendaDTO) {
         Revenda revenda = revendaMapper.toEntity(createRevendaDTO);
+        revenda.setCodigo(codeGenerator.generateRevendaCodigo());
         revenda = revendaRepository.save(revenda);
         return revendaMapper.toDTO(revenda);
     }

@@ -15,6 +15,7 @@ import com.mobiauto.backend.domain.repositories.ClienteRepository;
 import com.mobiauto.backend.domain.repositories.RevendaRepository;
 import com.mobiauto.backend.domain.repositories.VeiculoRepository;
 import com.mobiauto.backend.domain.repositories.UsuarioRepository;
+import com.mobiauto.backend.domain.utils.CodeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,15 +32,20 @@ public class OportunidadeService {
     private final RevendaRepository revendaRepository;
     private final VeiculoRepository veiculoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final CodeGenerator codeGenerator;
 
     @Autowired
-    public OportunidadeService(OportunidadeRepository oportunidadeRepository, OportunidadeMapper oportunidadeMapper, ClienteRepository clienteRepository, RevendaRepository revendaRepository, VeiculoRepository veiculoRepository, UsuarioRepository usuarioRepository) {
+    public OportunidadeService(OportunidadeRepository oportunidadeRepository, OportunidadeMapper oportunidadeMapper,
+                               ClienteRepository clienteRepository, RevendaRepository revendaRepository,
+                               VeiculoRepository veiculoRepository, UsuarioRepository usuarioRepository,
+                               CodeGenerator codeGenerator) {
         this.oportunidadeRepository = oportunidadeRepository;
         this.oportunidadeMapper = oportunidadeMapper;
         this.clienteRepository = clienteRepository;
         this.revendaRepository = revendaRepository;
         this.veiculoRepository = veiculoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.codeGenerator = codeGenerator;
     }
 
     public List<OportunidadeDTO> findAll() {
@@ -66,6 +72,7 @@ public class OportunidadeService {
                 .orElseThrow(() -> new RuntimeException("Usuario not found")); // Create a custom exception for this if needed
 
         Oportunidade oportunidade = oportunidadeMapper.toEntity(createOportunidadeDTO, cliente, revenda, veiculo, responsavelAtendimento);
+        oportunidade.setCodigo(codeGenerator.generateOportunidadeCodigo());
         oportunidade = oportunidadeRepository.save(oportunidade);
         return oportunidadeMapper.toDTO(oportunidade);
     }

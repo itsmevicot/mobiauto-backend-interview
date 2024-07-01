@@ -32,7 +32,6 @@ public class RevendaMapper {
 
     public void updateEntityFromDTO(UpdateRevendaDTO dto, Revenda revenda) {
         revenda.setCnpj(dto.cnpj());
-        revenda.setCodigo(dto.codigo());
         revenda.setNomeSocial(dto.nomeSocial());
         revenda.setStatus(dto.status());
         revenda.setAtivo(dto.ativo());
