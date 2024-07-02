@@ -79,7 +79,7 @@ A seção abaixo lista as permissões de cada rota.
 
 Para facilitar o entendimento, foi criado um DER (Diagrama de Entidade-Relacionamento) que pode ser visualizado [aqui](DER.png).
 
-Também para sua comodidade, há uma [Collection API](Mobiauto.postman_collection.json) disponível para que você possa testar no Postman, Insomnia, Bruno ou qualquer outra ferramenta de sua preferência.
+Também para sua comodidade, há uma [API Collection](Mobiauto.postman_collection.json) disponível para que você possa testar no Postman, Insomnia, Bruno ou qualquer outra ferramenta de sua preferência.
 
 A ideia da aplicação consiste em:
 
