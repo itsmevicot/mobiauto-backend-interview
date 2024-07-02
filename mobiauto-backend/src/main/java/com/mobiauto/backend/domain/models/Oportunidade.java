@@ -42,6 +42,6 @@ public class Oportunidade {
     private Veiculo veiculo;
 
     @ManyToOne
-    @JoinColumn(name = "responsavel_atendimento_id", nullable = false)
+    @JoinColumn(name = "responsavel_atendimento_id")
     private Usuario responsavelAtendimento;
 }

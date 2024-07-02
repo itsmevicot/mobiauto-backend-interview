@@ -63,5 +63,5 @@ CREATE TABLE oportunidade (
                               cliente_id INT REFERENCES cliente(id) NOT NULL,
                               revenda_id INT REFERENCES revenda(id) NOT NULL,
                               veiculo_id INT REFERENCES veiculo(id) NOT NULL,
-                              responsavel_atendimento_id INT REFERENCES usuario(id) NOT NULL
+                              responsavel_atendimento_id INT REFERENCES usuario(id) NULL
 );

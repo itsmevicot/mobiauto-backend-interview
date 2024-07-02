@@ -120,11 +120,14 @@ public class OportunidadeService {
         Oportunidade oportunidade = oportunidadeMapper.toEntity(createOportunidadeDTO, cliente, revenda, veiculo);
         oportunidade.setCodigo(codeGeneratorUtil.generateOportunidadeCodigo());
         oportunidade.setStatus(StatusOportunidadeEnum.NOVO);
+        oportunidade = oportunidadeRepository.save(oportunidade);
+
         OportunidadeDTO oportunidadeDTO = oportunidadeMapper.toDTO(oportunidade);
         rabbitTemplate.convertAndSend(RabbitMQConfig.OPORTUNIDADE_QUEUE, oportunidadeDTO);
-        oportunidadeRepository.save(oportunidade);
+
         return oportunidadeDTO;
     }
+
 
     @Transactional
     public OportunidadeDTO updateOportunidade(Long id, UpdateOportunidadeDTO updateOportunidadeDTO) {

@@ -1,7 +1,6 @@
 package com.mobiauto.backend.application.services;
 
 import com.mobiauto.backend.application.dtos.Oportunidade.OportunidadeDTO;
-import com.mobiauto.backend.application.mappers.OportunidadeMapper;
 import com.mobiauto.backend.domain.enums.CargosEnum;
 import com.mobiauto.backend.domain.enums.StatusOportunidadeEnum;
 import com.mobiauto.backend.domain.models.Oportunidade;
@@ -13,10 +12,10 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class OportunidadeListenerService {
@@ -26,10 +25,7 @@ public class OportunidadeListenerService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private OportunidadeMapper oportunidadeMapper;
-
+    @Transactional
     @RabbitListener(queues = RabbitMQConfig.OPORTUNIDADE_QUEUE)
     public void receiveMessage(OportunidadeDTO oportunidadeDTO) {
         try {
@@ -50,12 +46,18 @@ public class OportunidadeListenerService {
 
             if (!assistentes.isEmpty()) {
                 Usuario assistente = assistentes.get(0);
-                Optional<Oportunidade> optionalOportunidade = oportunidadeRepository.findById(oportunidadeDTO.id());
+
+                Long oportunidadeId = oportunidadeDTO.id();
+                if (oportunidadeId == null) {
+                    throw new IllegalArgumentException("Oportunidade ID não pode ser nulo");
+                }
+                System.out.println("Oportunidade ID: " + oportunidadeId);
+
+                Optional<Oportunidade> optionalOportunidade = oportunidadeRepository.findById(oportunidadeId);
                 if (optionalOportunidade.isPresent()) {
                     Oportunidade oportunidade = optionalOportunidade.get();
                     System.out.println("Assigning to assistente: " + assistente.getId());
                     oportunidade.setResponsavelAtendimento(assistente);
-                    oportunidade.setDataAtribuicao(LocalDateTime.now());
                     oportunidadeRepository.save(oportunidade);
                     System.out.println("Oportunidade assigned successfully. ResponsavelAtendimentoId: " + oportunidade.getResponsavelAtendimento().getId());
                 } else {
@@ -65,10 +67,12 @@ public class OportunidadeListenerService {
                 System.err.println("No assistants available for revenda ID " + revendaId);
                 throw new RuntimeException("No assistants available for revenda ID " + revendaId);
             }
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             System.err.println("Error processing message: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Unexpected error processing message: " + e.getMessage());
             e.printStackTrace();
+            throw e;
         }
     }
-
 }
