@@ -11,7 +11,7 @@ public interface RevendaRepository extends JpaRepository<Revenda, Long> {
     Optional<Revenda> findByCnpj(String cnpj);
     Optional<Revenda> findByCodigo(String codigo);
 
-    @Query("SELECT COALESCE(MAX(CAST(SUBSTRING(r.codigo, 4) AS int)), 0) FROM Revenda r")
+    @Query("SELECT COALESCE(MAX(CAST(SUBSTRING(r.codigo, 5) AS int)), 0) FROM Revenda r WHERE r.codigo LIKE 'REVEN%'")
     int findMaxCodigo();
 
     @Query("SELECT r FROM Revenda r JOIN r.perfis p WHERE p.usuario.id = :usuarioId")

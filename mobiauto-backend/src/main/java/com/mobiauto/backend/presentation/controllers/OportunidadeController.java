@@ -24,8 +24,9 @@ public class OportunidadeController {
     }
 
     @GetMapping
-    public List<OportunidadeDTO> getAllOportunidades() {
-        return oportunidadeService.findAll();
+    public ResponseEntity<List<OportunidadeDTO>> getAllOportunidades() {
+        List<OportunidadeDTO> oportunidades = oportunidadeService.findAll();
+        return ResponseEntity.ok(oportunidades);
     }
 
     @GetMapping("/{id}")

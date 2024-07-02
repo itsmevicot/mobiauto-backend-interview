@@ -106,11 +106,23 @@ public class UsuarioService {
     @Transactional
     public UsuarioDTO updateUsuario(Long id, UpdateUsuarioDTO updateUsuarioDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Converta o principal para um objeto Usuario
+        Usuario currentUsuario;
+        if (authentication.getPrincipal() instanceof Usuario) {
+            currentUsuario = (Usuario) authentication.getPrincipal();
+        } else if (authentication.getPrincipal() instanceof String email) {
+            currentUsuario = usuarioRepository.findByEmail(email)
+                    .orElseThrow(UsuarioNotFoundException::new);
+        } else {
+            throw new UnauthorizedException();
+        }
+
         Usuario existingUsuario = usuarioRepository.findById(id)
                 .orElseThrow(UsuarioNotFoundException::new);
 
         if (!authorizationUtils.isSuperuser(authentication) &&
-                !existingUsuario.getId().equals(((Usuario) authentication.getPrincipal()).getId())) {
+                !existingUsuario.getId().equals(currentUsuario.getId())) {
             throw new UnauthorizedException();
         }
 

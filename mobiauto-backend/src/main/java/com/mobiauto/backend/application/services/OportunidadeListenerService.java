@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class OportunidadeListenerService {
@@ -45,17 +46,20 @@ public class OportunidadeListenerService {
 
         if (!assistentes.isEmpty()) {
             Usuario assistente = assistentes.get(0);
-            Oportunidade oportunidade = oportunidadeRepository.findById(oportunidadeDTO.id())
-                    .orElseThrow(() -> new RuntimeException("Oportunidade not found"));
-            System.out.println("Assigning to assistente: " + assistente.getId());
-            oportunidade.setResponsavelAtendimento(assistente);
-            oportunidade.setDataAtribuicao(LocalDateTime.now());
-            oportunidadeRepository.save(oportunidade);
-            System.out.println("Oportunidade assigned successfully.");
+            Optional<Oportunidade> optionalOportunidade = oportunidadeRepository.findById(oportunidadeDTO.id());
+            if (optionalOportunidade.isPresent()) {
+                Oportunidade oportunidade = optionalOportunidade.get();
+                System.out.println("Assigning to assistente: " + assistente.getId());
+                oportunidade.setResponsavelAtendimento(assistente);
+                oportunidade.setDataAtribuicao(LocalDateTime.now());
+                oportunidadeRepository.save(oportunidade);
+                System.out.println("Oportunidade assigned successfully.");
+            } else {
+                System.err.println("Oportunidade not found with ID: " + oportunidadeDTO.id());
+            }
         } else {
+            System.err.println("No assistants available for revenda ID " + revendaId);
             throw new RuntimeException("No assistants available for revenda ID " + revendaId);
         }
     }
 }
-
-

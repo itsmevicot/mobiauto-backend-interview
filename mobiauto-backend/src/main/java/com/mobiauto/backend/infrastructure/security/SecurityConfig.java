@@ -29,13 +29,14 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/register").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/v3/api-docs.yaml", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/v3/api-docs.yaml", "/v3/api-docs/**",
+                                "/swagger-ui/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/perfil").hasAuthority("LOGIN_ONLY")
                         .requestMatchers(HttpMethod.GET, "/api/v1/public/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/proprietario/**").hasAnyRole("ADMIN", "PROPRIETARIO")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/gerente/**").hasAnyRole("ADMIN", "PROPRIETARIO", "GERENTE")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/oportunidades").hasAnyRole("PROPRIETARIO", "ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/api/v1/oportunidades").hasAnyRole("PROPRIETARIO", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

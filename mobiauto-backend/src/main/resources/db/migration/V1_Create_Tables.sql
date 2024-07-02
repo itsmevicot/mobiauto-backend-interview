@@ -61,3 +61,8 @@ CREATE TABLE oportunidade (
                               veiculo_id INT REFERENCES veiculo(id) NOT NULL,
                               responsavel_atendimento_id INT REFERENCES usuario(id) NOT NULL
 );
+
+CREATE SEQUENCE seq_usuario START 1;
+CREATE SEQUENCE seq_revenda START 1;
+CREATE SEQUENCE seq_veiculo START 1;
+CREATE SEQUENCE seq_oportunidade START 1;

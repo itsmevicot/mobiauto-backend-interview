@@ -15,7 +15,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByEmail(String email);
     boolean existsByEmail(String email);
 
-    @Query("SELECT COALESCE(MAX(CAST(SUBSTRING(u.codigo, 4) AS int)), 0) FROM Usuario u")
+    @Query("SELECT COALESCE(MAX(CAST(SUBSTRING(u.codigo, 5) AS int)), 0) FROM Usuario u WHERE u.codigo LIKE 'USUAR%'")
     int findMaxCodigo();
 
     @Query("SELECT u FROM Usuario u JOIN u.perfis p WHERE u.ativo = true AND p.revenda.id = :revendaId")
