@@ -84,6 +84,8 @@ Para facilitar o entendimento, foi criado um DER (Diagrama de Entidade-Relaciona
 
 Também para sua comodidade, há uma [API Collection](Mobiauto.postman_collection.json) disponível para que você possa testar no Postman, Insomnia, Bruno ou qualquer outra ferramenta de sua preferência.
 
+Por fim, há um [dump](dump.sql) com algumas inserções já realizadas, que você pode executar diretamente no banco ou subir no seu volume Docker para testar a aplicação.
+
 A ideia da aplicação consiste em:
 
 - Cada Cliente ser apartado da aplicação, isso é, não possuir dependências.
