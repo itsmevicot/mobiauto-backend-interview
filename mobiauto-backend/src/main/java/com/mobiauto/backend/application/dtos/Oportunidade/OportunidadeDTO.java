@@ -2,6 +2,7 @@ package com.mobiauto.backend.application.dtos.Oportunidade;
 
 import com.mobiauto.backend.domain.enums.StatusOportunidadeEnum;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public record OportunidadeDTO(
@@ -15,4 +16,4 @@ public record OportunidadeDTO(
         Long revendaId,
         Long veiculoId,
         Long responsavelAtendimentoId
-) {}
+) implements Serializable {}

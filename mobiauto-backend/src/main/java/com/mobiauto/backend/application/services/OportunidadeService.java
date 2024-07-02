@@ -119,9 +119,11 @@ public class OportunidadeService {
         oportunidade.setCodigo(codeGeneratorUtil.generateOportunidadeCodigo());
         oportunidade.setStatus(StatusOportunidadeEnum.NOVO);
         oportunidade = oportunidadeRepository.save(oportunidade);
-        rabbitTemplate.convertAndSend(RabbitMQConfig.OPORTUNIDADE_QUEUE, oportunidadeMapper.toDTO(oportunidade));
 
-        return oportunidadeMapper.toDTO(oportunidade);
+        OportunidadeDTO oportunidadeDTO = oportunidadeMapper.toDTO(oportunidade);
+        rabbitTemplate.convertAndSend(RabbitMQConfig.OPORTUNIDADE_QUEUE, oportunidadeDTO);
+
+        return oportunidadeDTO;
     }
 
 
