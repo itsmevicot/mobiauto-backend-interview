@@ -32,7 +32,10 @@ Seguindo esses passos, você deverá ser capaz de executar a aplicação correta
 
 # Funcionamento da Aplicação
 
-A aplicação é uma API REST que permite a gestão de revendas, veículos, usuários, perfis, oportunidades, clientes e cargos. Abaixo estão as etapas para utilização da API:
+A aplicação é uma API REST que permite a gestão de revendas, veículos, usuários, perfis, oportunidades, clientes e cargos.
+É possível visualizar os requisitos do teste [aqui](Senior%20Backend%20Developers%20Interview.pdf).
+
+Abaixo estão as etapas para utilização da API:
 
 ## Registro de Usuário
 - **Endpoint:** `POST api/v1/auth/register`
