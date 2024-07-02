@@ -103,7 +103,8 @@ public class OportunidadeService {
     @Transactional
     public OportunidadeDTO createOportunidade(CreateOportunidadeDTO createOportunidadeDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuario = (Usuario) authentication.getPrincipal();
+        String email = authentication.getName();
+        Usuario usuario = (Usuario) customUserDetailsService.loadUserByUsername(email);
 
         if (usuario.getPerfis().isEmpty()) {
             throw new UnauthorizedException();
@@ -124,8 +125,6 @@ public class OportunidadeService {
         oportunidadeRepository.save(oportunidade);
         return oportunidadeDTO;
     }
-
-
 
     @Transactional
     public OportunidadeDTO updateOportunidade(Long id, UpdateOportunidadeDTO updateOportunidadeDTO) {
