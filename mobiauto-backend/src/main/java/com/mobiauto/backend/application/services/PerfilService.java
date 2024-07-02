@@ -4,6 +4,7 @@ import com.mobiauto.backend.application.dtos.Perfil.PerfilDTO;
 import com.mobiauto.backend.application.dtos.Perfil.CreatePerfilDTO;
 import com.mobiauto.backend.application.dtos.Perfil.UpdatePerfilDTO;
 import com.mobiauto.backend.application.mappers.PerfilMapper;
+import com.mobiauto.backend.application.utils.AuthorizationUtils;
 import com.mobiauto.backend.domain.enums.CargosEnum;
 import com.mobiauto.backend.domain.exceptions.Auth.UnauthorizedException;
 import com.mobiauto.backend.domain.exceptions.Cargo.CargoNotFoundException;
@@ -24,9 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,90 +36,38 @@ public class PerfilService {
     private final RevendaRepository revendaRepository;
     private final CargoRepository cargoRepository;
     private final PerfilMapper perfilMapper;
+    private final AuthorizationUtils authorizationUtils;
 
     @Autowired
     public PerfilService(PerfilRepository perfilRepository, PerfilMapper perfilMapper, UsuarioRepository usuarioRepository,
-                         RevendaRepository revendaRepository, CargoRepository cargoRepository) {
+                         RevendaRepository revendaRepository, CargoRepository cargoRepository, AuthorizationUtils authorizationUtils) {
         this.perfilRepository = perfilRepository;
         this.usuarioRepository = usuarioRepository;
         this.revendaRepository = revendaRepository;
         this.cargoRepository = cargoRepository;
         this.perfilMapper = perfilMapper;
+        this.authorizationUtils = authorizationUtils;
     }
 
     public List<PerfilDTO> findAll() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuario = (Usuario) authentication.getPrincipal();
 
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"));
-
-        if (isAdmin) {
-            return perfilRepository.findAll().stream()
-                    .map(perfilMapper::toDTO)
-                    .collect(Collectors.toList());
+        if (!authorizationUtils.isSuperuser(authentication)) {
+            throw new UnauthorizedException();
         }
 
-        Set<Perfil> userPerfis = usuario.getPerfis();
-        List<Long> userRevendaIds = userPerfis.stream()
-                .map(perfil -> perfil.getRevenda().getId())
+        return perfilRepository.findAll().stream()
+                .map(perfilMapper::toDTO)
                 .collect(Collectors.toList());
-
-        boolean isProprietario = userPerfis.stream()
-                .anyMatch(perfil -> perfil.getCargo().getNome() == CargosEnum.PROPRIETARIO);
-
-        boolean isGerente = userPerfis.stream()
-                .anyMatch(perfil -> perfil.getCargo().getNome() == CargosEnum.GERENTE);
-
-        if (isProprietario) {
-            return perfilRepository.findAll().stream()
-                    .filter(perfil -> userRevendaIds.contains(perfil.getRevenda().getId()))
-                    .map(perfilMapper::toDTO)
-                    .collect(Collectors.toList());
-        }
-
-        if (isGerente) {
-            return perfilRepository.findAll().stream()
-                    .filter(perfil -> userRevendaIds.contains(perfil.getRevenda().getId()) &&
-                            (perfil.getCargo().getNome() == CargosEnum.GERENTE || perfil.getCargo().getNome() == CargosEnum.ASSISTENTE))
-                    .map(perfilMapper::toDTO)
-                    .collect(Collectors.toList());
-        }
-
-        throw new UnauthorizedException();
     }
 
     public PerfilDTO findById(Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuario = (Usuario) authentication.getPrincipal();
-
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"));
 
         Perfil perfil = perfilRepository.findById(id)
                 .orElseThrow(PerfilNotFoundException::new);
 
-        if (isAdmin) {
-            return perfilMapper.toDTO(perfil);
-        }
-
-        Set<Perfil> userPerfis = usuario.getPerfis();
-        List<Long> userRevendaIds = userPerfis.stream()
-                .map(userPerfil -> userPerfil.getRevenda().getId())
-                .collect(Collectors.toList());
-
-        boolean isProprietario = userPerfis.stream()
-                .anyMatch(userPerfil -> userPerfil.getCargo().getNome() == CargosEnum.PROPRIETARIO);
-
-        boolean isGerente = userPerfis.stream()
-                .anyMatch(userPerfil -> userPerfil.getCargo().getNome() == CargosEnum.GERENTE);
-
-        if (isProprietario && userRevendaIds.contains(perfil.getRevenda().getId())) {
-            return perfilMapper.toDTO(perfil);
-        }
-
-        if (isGerente && userRevendaIds.contains(perfil.getRevenda().getId()) &&
-                (perfil.getCargo().getNome() == CargosEnum.GERENTE || perfil.getCargo().getNome() == CargosEnum.ASSISTENTE)) {
+        if (authorizationUtils.isSuperuser(authentication) || authorizationUtils.hasAccessToRevenda(perfil.getRevenda().getId())) {
             return perfilMapper.toDTO(perfil);
         }
 
@@ -134,15 +81,7 @@ public class PerfilService {
 
         CargosEnum newCargo = CargosEnum.valueOf(createPerfilDTO.cargoId().toString());
 
-        boolean authorized = isSuperuser(authentication) || usuario.getPerfis().stream()
-                .anyMatch(perfil -> perfil.getCargo().getNome() == CargosEnum.PROPRIETARIO ||
-                        (perfil.getCargo().getNome() == CargosEnum.GERENTE && newCargo == CargosEnum.ASSISTENTE));
-
-        if (!authorized) {
-            throw new UnauthorizedException();
-        }
-
-        if (!canAssignRole(usuario, newCargo)) {
+        if (!authorizationUtils.isAuthorizedToCreatePerfil(createPerfilDTO.revendaId(), newCargo) || !authorizationUtils.canAssignRole(usuario, newCargo)) {
             throw new UnauthorizedException();
         }
 
@@ -165,19 +104,17 @@ public class PerfilService {
 
         CargosEnum newCargo = CargosEnum.valueOf(updatePerfilDTO.cargoId().toString());
 
-        boolean authorized = isSuperuser(authentication) || usuario.getPerfis().stream()
-                .anyMatch(perfil -> perfil.getCargo().getNome() == CargosEnum.PROPRIETARIO);
-
-        if (!authorized) {
-            throw new UnauthorizedException();
-        }
-
-        if (!canAssignRole(usuario, newCargo)) {
-            throw new UnauthorizedException();
-        }
-
         Perfil existingPerfil = perfilRepository.findById(id)
                 .orElseThrow(PerfilNotFoundException::new);
+
+        if (!authorizationUtils.isSuperuser(authentication) &&
+                !(authorizationUtils.hasRole(CargosEnum.PROPRIETARIO) && authorizationUtils.hasAccessToRevenda(existingPerfil.getRevenda().getId()))) {
+            throw new UnauthorizedException();
+        }
+
+        if (!authorizationUtils.canAssignRole(usuario, newCargo)) {
+            throw new UnauthorizedException();
+        }
 
         Cargo cargo = cargoRepository.findById(updatePerfilDTO.cargoId())
                 .orElseThrow(CargoNotFoundException::new);
@@ -190,52 +127,26 @@ public class PerfilService {
     @Transactional
     public void deletePerfil(Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuario = (Usuario) authentication.getPrincipal();
-
-        boolean authorized = isSuperuser(authentication) || usuario.getPerfis().stream()
-                .anyMatch(perfil -> perfil.getCargo().getNome() == CargosEnum.PROPRIETARIO);
-
-        if (!authorized) {
-            throw new UnauthorizedException();
-        }
 
         Perfil perfil = perfilRepository.findById(id)
                 .orElseThrow(PerfilNotFoundException::new);
+
+        if (!authorizationUtils.isSuperuser(authentication) &&
+                !authorizationUtils.hasRole(CargosEnum.PROPRIETARIO)) {
+            throw new UnauthorizedException();
+        }
+
         perfilRepository.delete(perfil);
     }
 
     public List<PerfilDTO> findByRevenda(Long revendaId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuario = (Usuario) authentication.getPrincipal();
 
-        boolean authorized = isSuperuser(authentication) || usuario.getPerfis().stream()
-                .anyMatch(perfil -> perfil.getRevenda().getId().equals(revendaId));
-
-        if (!authorized) {
+        if (!authorizationUtils.isSuperuser(authentication) && !authorizationUtils.hasAccessToRevenda(revendaId)) {
             throw new UnauthorizedException();
         }
 
         List<Perfil> perfis = perfilRepository.findByRevendaId(revendaId);
         return perfis.stream().map(perfilMapper::toDTO).collect(Collectors.toList());
-    }
-
-    private boolean isSuperuser(Authentication authentication) {
-        return authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"));
-    }
-
-    private boolean canAssignRole(Usuario usuario, CargosEnum newCargo) {
-        List<CargosEnum> assignableRoles = Arrays.asList(CargosEnum.values());
-
-        if (isSuperuser(SecurityContextHolder.getContext().getAuthentication())) {
-            return true;
-        }
-
-        CargosEnum highestRole = usuario.getPerfis().stream()
-                .map(perfil -> perfil.getCargo().getNome())
-                .max(Enum::compareTo)
-                .orElse(CargosEnum.ASSISTENTE);
-
-        return assignableRoles.indexOf(newCargo) <= assignableRoles.indexOf(highestRole);
     }
 }
