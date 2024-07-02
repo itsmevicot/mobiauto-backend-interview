@@ -21,15 +21,15 @@ public class PerfilMapper {
         );
     }
 
-    public Perfil toEntity(CreatePerfilDTO dto, Usuario usuario, Revenda revenda, Cargo cargo) {
+    public Perfil toEntity(CreatePerfilDTO createPerfilDTO, Usuario usuario, Revenda revenda, Cargo cargo) {
         Perfil perfil = new Perfil();
-        perfil.setUsuario(usuario);
         perfil.setRevenda(revenda);
+        perfil.setUsuario(usuario);
         perfil.setCargo(cargo);
         return perfil;
     }
 
-    public void updateEntityFromDTO(UpdatePerfilDTO dto, Perfil perfil, Cargo cargo) {
+    public void updateEntityFromDTO(UpdatePerfilDTO updatePerfilDTO, Perfil perfil, Cargo cargo) {
         perfil.setCargo(cargo);
     }
 }

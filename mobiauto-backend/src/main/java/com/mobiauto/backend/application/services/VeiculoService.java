@@ -10,10 +10,8 @@ import com.mobiauto.backend.domain.models.Veiculo;
 import com.mobiauto.backend.domain.models.Revenda;
 import com.mobiauto.backend.domain.repositories.VeiculoRepository;
 import com.mobiauto.backend.domain.repositories.RevendaRepository;
-import com.mobiauto.backend.domain.utils.CodeGeneratorUtil;
-import com.mobiauto.backend.domain.utils.SecurityUtils;
+import com.mobiauto.backend.application.utils.CodeGeneratorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,19 +24,16 @@ public class VeiculoService {
     private final VeiculoRepository veiculoRepository;
     private final RevendaRepository revendaRepository;
     private final VeiculoMapper veiculoMapper;
-    private final CodeGeneratorUtil codeGeneratorUtil;
-    private final SecurityUtils securityUtils;
+    private final CodeGeneratorUtils codeGeneratorUtil;
 
 
     @Autowired
     public VeiculoService(VeiculoRepository veiculoRepository, VeiculoMapper veiculoMapper,
-                          RevendaRepository revendaRepository, CodeGeneratorUtil codeGeneratorUtil,
-                          SecurityUtils securityUtils){
+                          RevendaRepository revendaRepository, CodeGeneratorUtils codeGeneratorUtil) {
         this.veiculoRepository = veiculoRepository;
         this.veiculoMapper = veiculoMapper;
         this.revendaRepository = revendaRepository;
         this.codeGeneratorUtil = codeGeneratorUtil;
-        this.securityUtils = securityUtils;
     }
 
     public List<VeiculoDTO> findAll() {
@@ -53,7 +48,6 @@ public class VeiculoService {
         return veiculoMapper.toDTO(veiculo);
     }
 
-    @PreAuthorize("@securityUtils.hasAccessToRevenda(principal, #revendaId)")
     public List<VeiculoDTO> findByRevenda(Long revendaId) {
         return veiculoRepository.findByRevendaId(revendaId).stream()
                 .map(veiculoMapper::toDTO)

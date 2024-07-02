@@ -42,14 +42,10 @@ public class OportunidadeMapper {
         return oportunidade;
     }
 
-    public void updateEntityFromDTO(UpdateOportunidadeDTO dto, Oportunidade oportunidade, Cliente cliente, Revenda revenda, Veiculo veiculo, Usuario responsavelAtendimento) {
+    public void updateEntityFromDTO(UpdateOportunidadeDTO dto, Oportunidade oportunidade) {
         oportunidade.setStatus(dto.status());
         oportunidade.setMotivoConclusao(dto.motivoConclusao());
         oportunidade.setDataAtribuicao(dto.dataAtribuicao());
         oportunidade.setDataConclusao(dto.dataConclusao());
-        oportunidade.setCliente(cliente);
-        oportunidade.setRevenda(revenda);
-        oportunidade.setVeiculo(veiculo);
-        oportunidade.setResponsavelAtendimento(responsavelAtendimento);
     }
 }

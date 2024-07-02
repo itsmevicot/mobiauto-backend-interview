@@ -11,11 +11,6 @@ public record UpdateRevendaDTO(
         String cnpj,
 
         @NotBlank(message = "O nome social é obrigatório.")
-        String nomeSocial,
+        String nomeSocial
 
-        @NotNull(message = "O status é obrigatório.")
-        StatusOportunidadeEnum status,
-
-        @NotNull(message = "O status ativo é obrigatório.")
-        boolean ativo
 ) {}

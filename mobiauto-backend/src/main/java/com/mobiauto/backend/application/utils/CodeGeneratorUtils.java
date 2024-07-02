@@ -1,4 +1,4 @@
-package com.mobiauto.backend.domain.utils;
+package com.mobiauto.backend.application.utils;
 
 import com.mobiauto.backend.domain.repositories.UsuarioRepository;
 import com.mobiauto.backend.domain.repositories.RevendaRepository;
@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CodeGeneratorUtil {
+public class CodeGeneratorUtils {
 
     @Autowired
     private UsuarioRepository usuarioRepository;

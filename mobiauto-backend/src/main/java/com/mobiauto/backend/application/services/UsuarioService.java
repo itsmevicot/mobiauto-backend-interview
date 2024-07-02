@@ -8,7 +8,7 @@ import com.mobiauto.backend.application.mappers.OportunidadeMapper;
 import com.mobiauto.backend.application.mappers.UsuarioMapper;
 import com.mobiauto.backend.domain.exceptions.Usuario.EmailAlreadyExistsException;
 import com.mobiauto.backend.domain.exceptions.Usuario.UsuarioNotFoundException;
-import com.mobiauto.backend.domain.utils.CodeGeneratorUtil;
+import com.mobiauto.backend.application.utils.CodeGeneratorUtils;
 import com.mobiauto.backend.domain.models.Usuario;
 import com.mobiauto.backend.domain.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +27,12 @@ public class UsuarioService {
     private final UsuarioMapper usuarioMapper;
     private final OportunidadeMapper oportunidadeMapper;
     private final PasswordEncoder passwordEncoder;
-    private final CodeGeneratorUtil codeGeneratorUtil;
+    private final CodeGeneratorUtils codeGeneratorUtil;
 
     @Autowired
     public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper,
                           OportunidadeMapper oportunidadeMapper, PasswordEncoder passwordEncoder,
-                          CodeGeneratorUtil codeGeneratorUtil) {
+                          CodeGeneratorUtils codeGeneratorUtil) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioMapper = usuarioMapper;
         this.oportunidadeMapper = oportunidadeMapper;

@@ -1,91 +1,63 @@
-
-CREATE TABLE cliente (
-                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                         nome VARCHAR(255) NOT NULL,
-                         email VARCHAR(255) NOT NULL UNIQUE,
-                         telefone VARCHAR(20) NOT NULL,
-                         ativo BOOLEAN NOT NULL DEFAULT true
-);
-
-
-CREATE TABLE cargo (
-                       id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                       nome VARCHAR(50) NOT NULL,  -- Storing enum as String
-);
-
-
-CREATE TABLE permissao (
-                           id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                           descricao VARCHAR(255) NOT NULL UNIQUE,
-);
-
+CREATE TYPE cargos_enum AS ENUM ('PROPRIETARIO', 'GERENTE', 'ASSISTENTE');
+CREATE TYPE status_oportunidade_enum AS ENUM ('NOVO', 'EM_ATENDIMENTO', 'CONCLUIDO');
 
 CREATE TABLE revenda (
-                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                         cnpj VARCHAR(20) NOT NULL UNIQUE,
-                         codigo VARCHAR(50) NOT NULL UNIQUE,
+                         id SERIAL PRIMARY KEY,
+                         cnpj VARCHAR(255) UNIQUE NOT NULL,
+                         codigo VARCHAR(255) UNIQUE NOT NULL,
                          nome_social VARCHAR(255) NOT NULL,
-                         status VARCHAR(50) NOT NULL,
-                         ativo BOOLEAN NOT NULL DEFAULT true
+                         ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+CREATE TABLE cliente (
+                         id SERIAL PRIMARY KEY,
+                         nome VARCHAR(255) NOT NULL,
+                         email VARCHAR(255) UNIQUE NOT NULL,
+                         telefone VARCHAR(255) NOT NULL,
+                         ativo BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE cargo (
+                       id SERIAL PRIMARY KEY,
+                       nome cargos_enum NOT NULL
+);
 
 CREATE TABLE usuario (
-                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                         codigo VARCHAR(50) NOT NULL UNIQUE,
+                         id SERIAL PRIMARY KEY,
+                         codigo VARCHAR(255) UNIQUE NOT NULL,
                          nome VARCHAR(255) NOT NULL,
-                         email VARCHAR(255) NOT NULL UNIQUE,
+                         email VARCHAR(255) UNIQUE NOT NULL,
                          senha VARCHAR(255) NOT NULL,
-                         ativo BOOLEAN NOT NULL DEFAULT true
+                         ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+CREATE TABLE perfil (
+                        id SERIAL PRIMARY KEY,
+                        revenda_id INT REFERENCES revenda(id) NOT NULL,
+                        usuario_id INT REFERENCES usuario(id) NOT NULL,
+                        cargo_id INT REFERENCES cargo(id) NOT NULL
+);
 
 CREATE TABLE veiculo (
-                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                         codigo VARCHAR(50) NOT NULL UNIQUE,
+                         id SERIAL PRIMARY KEY,
+                         codigo VARCHAR(255) UNIQUE NOT NULL,
                          marca VARCHAR(255) NOT NULL,
                          modelo VARCHAR(255) NOT NULL,
                          versao VARCHAR(255) NOT NULL,
                          ano_modelo INT NOT NULL,
-                         ativo BOOLEAN NOT NULL DEFAULT true,
-                         revenda_id BIGINT NOT NULL,
-                         FOREIGN KEY (revenda_id) REFERENCES revenda(id)
+                         ativo BOOLEAN NOT NULL DEFAULT TRUE,
+                         revenda_id INT REFERENCES revenda(id) NOT NULL
 );
-
 
 CREATE TABLE oportunidade (
-                              id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                              codigo VARCHAR(50) NOT NULL UNIQUE,
-                              status VARCHAR(50) NOT NULL,  -- Storing enum as String
+                              id SERIAL PRIMARY KEY,
+                              codigo VARCHAR(255) UNIQUE NOT NULL,
+                              status status_oportunidade_enum NOT NULL,
                               motivo_conclusao VARCHAR(255),
-                              data_atribuicao DATETIME,
-                              data_conclusao DATETIME,
-                              cliente_id BIGINT NOT NULL,
-                              revenda_id BIGINT NOT NULL,
-                              veiculo_id BIGINT NOT NULL,
-                              responsavel_atendimento_id BIGINT NOT NULL,
-                              FOREIGN KEY (cliente_id) REFERENCES cliente(id),
-                              FOREIGN KEY (revenda_id) REFERENCES revenda(id),
-                              FOREIGN KEY (veiculo_id) REFERENCES veiculo(id),
-                              FOREIGN KEY (responsavel_atendimento_id) REFERENCES usuario(id)
-);
-
-
-CREATE TABLE perfil (
-                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                        revenda_id BIGINT NOT NULL,
-                        usuario_id BIGINT NOT NULL,
-                        cargo_id BIGINT NOT NULL,
-                        FOREIGN KEY (revenda_id) REFERENCES revenda(id),
-                        FOREIGN KEY (usuario_id) REFERENCES usuario(id),
-                        FOREIGN KEY (cargo_id) REFERENCES cargo(id)
-);
-
-
-CREATE TABLE CargoPermissao (
-                                cargo_id BIGINT NOT NULL,
-                                permissao_id BIGINT NOT NULL,
-                                PRIMARY KEY (cargo_id, permissao_id),
-                                FOREIGN KEY (cargo_id) REFERENCES cargo(id),
-                                FOREIGN KEY (permissao_id) REFERENCES permissao(id)
+                              data_atribuicao TIMESTAMP,
+                              data_conclusao TIMESTAMP,
+                              cliente_id INT REFERENCES cliente(id) NOT NULL,
+                              revenda_id INT REFERENCES revenda(id) NOT NULL,
+                              veiculo_id INT REFERENCES veiculo(id) NOT NULL,
+                              responsavel_atendimento_id INT REFERENCES usuario(id) NOT NULL
 );

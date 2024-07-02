@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -49,5 +50,17 @@ public class OportunidadeController {
     public ResponseEntity<Void> deleteOportunidade(@PathVariable Long id) {
         oportunidadeService.deleteOportunidade(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/finalizar")
+    public ResponseEntity<OportunidadeDTO> finalizarOportunidade(@PathVariable Long id, @RequestParam String motivo, @RequestParam LocalDateTime dataConclusao) {
+        OportunidadeDTO oportunidadeDTO = oportunidadeService.finalizarOportunidade(id, motivo, dataConclusao);
+        return ResponseEntity.ok(oportunidadeDTO);
+    }
+
+    @PostMapping("/{id}/transferir")
+    public ResponseEntity<OportunidadeDTO> transferirOportunidade(@PathVariable Long id, @RequestParam Long novoResponsavelId) {
+        OportunidadeDTO oportunidadeDTO = oportunidadeService.transferirOportunidade(id, novoResponsavelId);
+        return ResponseEntity.ok(oportunidadeDTO);
     }
 }

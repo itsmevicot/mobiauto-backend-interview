@@ -4,12 +4,9 @@ import com.mobiauto.backend.application.dtos.Perfil.PerfilDTO;
 import com.mobiauto.backend.application.dtos.Perfil.CreatePerfilDTO;
 import com.mobiauto.backend.application.dtos.Perfil.UpdatePerfilDTO;
 import com.mobiauto.backend.application.services.PerfilService;
-import com.mobiauto.backend.domain.models.Usuario;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,9 +35,7 @@ public class PerfilController {
 
     @PostMapping
     public ResponseEntity<PerfilDTO> createPerfil(@Valid @RequestBody CreatePerfilDTO createPerfilDTO) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuarioCriador = (Usuario) authentication.getPrincipal();
-        PerfilDTO perfilDTO = perfilService.createPerfil(createPerfilDTO, usuarioCriador.getId());
+        PerfilDTO perfilDTO = perfilService.createPerfil(createPerfilDTO);
         return ResponseEntity.ok(perfilDTO);
     }
 
@@ -54,5 +49,11 @@ public class PerfilController {
     public ResponseEntity<Void> deletePerfil(@PathVariable Long id) {
         perfilService.deletePerfil(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/revenda/{revendaId}")
+    public ResponseEntity<List<PerfilDTO>> findByRevenda(@PathVariable Long revendaId) {
+        List<PerfilDTO> perfis = perfilService.findByRevenda(revendaId);
+        return ResponseEntity.ok(perfis);
     }
 }

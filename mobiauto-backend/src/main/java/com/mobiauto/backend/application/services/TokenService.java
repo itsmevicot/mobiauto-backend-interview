@@ -56,7 +56,7 @@ public class TokenService {
     public String generatePerfilToken(Usuario usuario, Perfil perfil) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(this.secret);
-            String perfilData = perfil != null ? perfil.getRevenda().getCodigo() + "-" + perfil.getCargo().getNome() : "NONE";
+            String perfilData = perfil != null ? perfil.getRevenda().getId() + "-" + perfil.getCargo().getNome() : "NONE";
             return JWT.create()
                     .withIssuer("auth-api")
                     .withSubject(usuario.getEmail())
@@ -68,6 +68,7 @@ public class TokenService {
             throw new RuntimeException("Erro ao gerar token. Tente novamente.");
         }
     }
+
 
     private Instant genExpirationDate() {
         int expirationTime = 12;
