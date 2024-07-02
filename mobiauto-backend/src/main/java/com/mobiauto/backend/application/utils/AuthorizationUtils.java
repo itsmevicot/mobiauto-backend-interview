@@ -69,7 +69,7 @@ public class AuthorizationUtils {
                 hasRole(CargosEnum.GERENTE);
     }
 
-    private CurrentPerfilDTO getCurrentPerfil() {
+    public CurrentPerfilDTO getCurrentPerfil() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         DecodedJWT decodedJWT = tokenService.validateToken(authentication.getCredentials().toString());
 

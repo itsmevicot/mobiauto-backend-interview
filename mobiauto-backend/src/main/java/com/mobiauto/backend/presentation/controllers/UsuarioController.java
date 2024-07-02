@@ -24,13 +24,15 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public List<UsuarioDTO> getAllActiveUsuarios() {
-        return usuarioService.findAllActive();
+    public ResponseEntity<List<UsuarioDTO>> getAllActiveUsuarios() {
+        List<UsuarioDTO> usuariosAtivos = usuarioService.findAllActive();
+        return ResponseEntity.ok(usuariosAtivos);
     }
 
     @GetMapping("/inativos")
-    public List<UsuarioDTO> getAllInactiveUsuarios() {
-        return usuarioService.findAllInactive();
+    public ResponseEntity<List<UsuarioDTO>> getAllInactiveUsuarios() {
+        List<UsuarioDTO> usuariosInativos = usuarioService.findAllInactive();
+        return ResponseEntity.ok(usuariosInativos);
     }
 
     @GetMapping("/{id}")

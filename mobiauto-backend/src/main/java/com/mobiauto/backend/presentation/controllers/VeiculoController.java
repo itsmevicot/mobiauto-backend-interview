@@ -23,14 +23,21 @@ public class VeiculoController {
     }
 
     @GetMapping
-    public List<VeiculoDTO> getAllVeiculos() {
-        return veiculoService.findAll();
+    public ResponseEntity<List<VeiculoDTO>> getAllVeiculos() {
+        List<VeiculoDTO> veiculos = veiculoService.findAll();
+        return ResponseEntity.ok(veiculos);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<VeiculoDTO> getVeiculoById(@PathVariable Long id) {
         VeiculoDTO veiculoDTO = veiculoService.findById(id);
         return ResponseEntity.ok(veiculoDTO);
+    }
+
+    @GetMapping("/revenda/{revendaId}")
+    public ResponseEntity<List<VeiculoDTO>> getVeiculosByRevenda(@PathVariable Long revendaId) {
+        List<VeiculoDTO> veiculos = veiculoService.findByRevenda(revendaId);
+        return ResponseEntity.ok(veiculos);
     }
 
     @PostMapping
@@ -41,8 +48,8 @@ public class VeiculoController {
 
     @PutMapping("/{id}")
     public ResponseEntity<VeiculoDTO> updateVeiculo(@PathVariable Long id, @Valid @RequestBody UpdateVeiculoDTO updateVeiculoDTO) {
-        VeiculoDTO veiculoDTO = veiculoService.updateVeiculo(id, updateVeiculoDTO);
-        return ResponseEntity.ok(veiculoDTO);
+        VeiculoDTO updatedVeiculoDTO = veiculoService.updateVeiculo(id, updateVeiculoDTO);
+        return ResponseEntity.ok(updatedVeiculoDTO);
     }
 
     @DeleteMapping("/{id}")
