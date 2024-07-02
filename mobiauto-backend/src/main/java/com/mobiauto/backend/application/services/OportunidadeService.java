@@ -25,6 +25,7 @@ import com.mobiauto.backend.domain.repositories.VeiculoRepository;
 import com.mobiauto.backend.domain.repositories.UsuarioRepository;
 import com.mobiauto.backend.application.utils.CodeGeneratorUtils;
 import com.mobiauto.backend.infrastructure.configuration.RabbitMQConfig;
+import org.hibernate.Hibernate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -69,8 +70,6 @@ public class OportunidadeService {
 
     public List<OportunidadeDTO> findAll() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuario = (Usuario) authentication.getPrincipal();
-
         boolean isAdmin = authorizationUtils.isSuperuser(authentication);
 
         if (isAdmin) {
@@ -102,24 +101,29 @@ public class OportunidadeService {
 
     @Transactional
     public OportunidadeDTO createOportunidade(CreateOportunidadeDTO createOportunidadeDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+
+        if (usuario.getPerfis().isEmpty()) {
+            throw new UnauthorizedException();
+        }
+
         Cliente cliente = clienteRepository.findById(createOportunidadeDTO.clienteId())
                 .orElseThrow(ClienteNotFoundException::new);
         Revenda revenda = revendaRepository.findById(createOportunidadeDTO.revendaId())
                 .orElseThrow(RevendaNotFoundException::new);
         Veiculo veiculo = veiculoRepository.findById(createOportunidadeDTO.veiculoId())
                 .orElseThrow(VeiculoNotFoundException::new);
-        Usuario responsavelAtendimento = usuarioRepository.findById(createOportunidadeDTO.responsavelAtendimentoId())
-                .orElseThrow(UsuarioNotFoundException::new);
 
-        Oportunidade oportunidade = oportunidadeMapper.toEntity(createOportunidadeDTO, cliente, revenda, veiculo, responsavelAtendimento);
+        Oportunidade oportunidade = oportunidadeMapper.toEntity(createOportunidadeDTO, cliente, revenda, veiculo);
         oportunidade.setCodigo(codeGeneratorUtil.generateOportunidadeCodigo());
+        oportunidade.setStatus(StatusOportunidadeEnum.NOVO);
         oportunidade = oportunidadeRepository.save(oportunidade);
-
-        // Enviar a oportunidade para a fila de distribuição
         rabbitTemplate.convertAndSend(RabbitMQConfig.OPORTUNIDADE_QUEUE, oportunidadeMapper.toDTO(oportunidade));
 
         return oportunidadeMapper.toDTO(oportunidade);
     }
+
 
     @Transactional
     public OportunidadeDTO updateOportunidade(Long id, UpdateOportunidadeDTO updateOportunidadeDTO) {
@@ -142,13 +146,21 @@ public class OportunidadeService {
     @Transactional
     public void deleteOportunidade(Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!authorizationUtils.isSuperuser(authentication)) {
-            throw new UnauthorizedException();
-        }
+
         Oportunidade oportunidade = oportunidadeRepository.findById(id)
                 .orElseThrow(OportunidadeNotFoundException::new);
+
+        boolean isAdmin = authorizationUtils.isSuperuser(authentication);
+        boolean isProprietario = authorizationUtils.hasRole(CargosEnum.PROPRIETARIO) &&
+                authorizationUtils.hasAccessToRevenda(oportunidade.getRevenda().getId());
+
+        if (!isAdmin && !isProprietario) {
+            throw new UnauthorizedException();
+        }
+
         oportunidadeRepository.delete(oportunidade);
     }
+
 
     @Transactional
     public OportunidadeDTO finalizarOportunidade(Long oportunidadeId, String motivo, LocalDateTime dataConclusao) {

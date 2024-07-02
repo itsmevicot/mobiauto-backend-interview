@@ -31,6 +31,14 @@ public class CargoService {
         return cargoRepository.findById(id).orElseThrow(CargoNotFoundException::new);
     }
 
+    public Iterable<Cargo> findAll() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!authorizationUtils.isSuperuser(authentication)) {
+            throw new UnauthorizedException();
+        }
+        return cargoRepository.findAll();
+    }
+
     @Transactional
     public Cargo save(Cargo cargo) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -76,6 +76,9 @@ public class ClienteService {
 
     @Transactional
     public ClienteDTO createCliente(CreateClienteDTO createClienteDTO) {
+        if (authorizationUtils.getCurrentPerfil() == null) {
+            throw new UnauthorizedException();
+        }
         if (clienteRepository.existsByEmail(createClienteDTO.email())) {
             throw new EmailAlreadyExistsException();
         }
@@ -86,6 +89,9 @@ public class ClienteService {
 
     @Transactional
     public ClienteDTO updateCliente(Long id, UpdateClienteDTO updateClienteDTO) {
+        if (authorizationUtils.getCurrentPerfil() == null) {
+            throw new UnauthorizedException();
+        }
         Cliente existingCliente = clienteRepository.findById(id)
                 .orElseThrow(ClienteNotFoundException::new);
 

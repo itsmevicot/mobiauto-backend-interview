@@ -17,6 +17,12 @@ public class CargoController {
         this.cargoService = cargoService;
     }
 
+    @GetMapping
+    public ResponseEntity<Iterable<Cargo>> getAllCargos() {
+        Iterable<Cargo> cargos = cargoService.findAll();
+        return ResponseEntity.ok(cargos);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Cargo> getCargoById(@PathVariable Long id) {
         Cargo cargo = cargoService.findById(id);
