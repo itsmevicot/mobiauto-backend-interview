@@ -104,6 +104,8 @@ Também para sua comodidade, há uma [API Collection](Mobiauto.postman_collectio
 
 Por fim, há um [dump](dump.sql) com algumas inserções já realizadas, que você pode executar diretamente no banco ou subir no seu volume Docker para testar a aplicação.
 
+O dump também possui uma conta admin com as credenciais: admin@admin e senha: admin.
+
 A ideia da aplicação consiste em:
 
 - Cada Cliente ser apartado da aplicação, isso é, não possuir dependências.
