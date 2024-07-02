@@ -24,6 +24,8 @@ import com.mobiauto.backend.domain.repositories.RevendaRepository;
 import com.mobiauto.backend.domain.repositories.VeiculoRepository;
 import com.mobiauto.backend.domain.repositories.UsuarioRepository;
 import com.mobiauto.backend.application.utils.CodeGeneratorUtils;
+import com.mobiauto.backend.infrastructure.configuration.RabbitMQConfig;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,12 +48,14 @@ public class OportunidadeService {
     private final UsuarioRepository usuarioRepository;
     private final CodeGeneratorUtils codeGeneratorUtil;
     private final AuthorizationUtils authorizationUtils;
+    private final RabbitTemplate rabbitTemplate;
 
     @Autowired
     public OportunidadeService(OportunidadeRepository oportunidadeRepository, OportunidadeMapper oportunidadeMapper,
                                ClienteRepository clienteRepository, RevendaRepository revendaRepository,
                                VeiculoRepository veiculoRepository, UsuarioRepository usuarioRepository,
-                               CodeGeneratorUtils codeGeneratorUtil, AuthorizationUtils authorizationUtils) {
+                               CodeGeneratorUtils codeGeneratorUtil, AuthorizationUtils authorizationUtils,
+                               RabbitTemplate rabbitTemplate) {
         this.oportunidadeRepository = oportunidadeRepository;
         this.oportunidadeMapper = oportunidadeMapper;
         this.clienteRepository = clienteRepository;
@@ -59,6 +64,7 @@ public class OportunidadeService {
         this.usuarioRepository = usuarioRepository;
         this.codeGeneratorUtil = codeGeneratorUtil;
         this.authorizationUtils = authorizationUtils;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     public List<OportunidadeDTO> findAll() {
@@ -108,6 +114,10 @@ public class OportunidadeService {
         Oportunidade oportunidade = oportunidadeMapper.toEntity(createOportunidadeDTO, cliente, revenda, veiculo, responsavelAtendimento);
         oportunidade.setCodigo(codeGeneratorUtil.generateOportunidadeCodigo());
         oportunidade = oportunidadeRepository.save(oportunidade);
+
+        // Enviar a oportunidade para a fila de distribuição
+        rabbitTemplate.convertAndSend(RabbitMQConfig.OPORTUNIDADE_QUEUE, oportunidadeMapper.toDTO(oportunidade));
+
         return oportunidadeMapper.toDTO(oportunidade);
     }
 
@@ -184,5 +194,29 @@ public class OportunidadeService {
 
         oportunidade = oportunidadeRepository.save(oportunidade);
         return oportunidadeMapper.toDTO(oportunidade);
+    }
+
+    @Transactional
+    public void distributeOportunidade(OportunidadeDTO oportunidadeDTO) {
+        Revenda revenda = revendaRepository.findById(oportunidadeDTO.revendaId())
+                .orElseThrow(RevendaNotFoundException::new);
+
+        List<Usuario> assistentes = usuarioRepository.findByPerfisCargoNomeAndPerfisRevendaId(CargosEnum.ASSISTENTE.name(), revenda.getId());
+
+        assistentes.sort(Comparator
+                .comparingInt((Usuario u) -> (int) u.getOportunidades().stream()
+                        .filter(o -> o.getStatus() == StatusOportunidadeEnum.NOVO || o.getStatus() == StatusOportunidadeEnum.EM_ATENDIMENTO)
+                        .count())
+                .thenComparing(Comparator.comparing(Usuario::getUltimaOportunidadeRecebida, Comparator.nullsFirst(Comparator.naturalOrder()))));
+
+        if (!assistentes.isEmpty()) {
+            Usuario assistente = assistentes.get(0);
+            Oportunidade oportunidade = oportunidadeMapper.toEntityFromDTO(oportunidadeDTO);
+            oportunidade.setResponsavelAtendimento(assistente);
+            oportunidade.setDataAtribuicao(LocalDateTime.now());
+            oportunidadeRepository.save(oportunidade);
+        } else {
+            throw new RuntimeException("No assistants available for revenda ID " + revenda.getId());
+        }
     }
 }
