@@ -3,6 +3,7 @@ package com.mobiauto.backend.application.utils;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.mobiauto.backend.application.dtos.Perfil.CurrentPerfilDTO;
 import com.mobiauto.backend.domain.enums.CargosEnum;
+import com.mobiauto.backend.domain.exceptions.Auth.UnauthorizedException;
 import com.mobiauto.backend.domain.models.Usuario;
 import com.mobiauto.backend.application.services.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ public class AuthorizationUtils {
     private TokenService tokenService;
 
     public boolean isSuperuser(Authentication authentication) {
-        return authentication.getAuthorities().stream()
+        return authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ADMIN"));
     }
 
@@ -71,6 +72,11 @@ public class AuthorizationUtils {
 
     public CurrentPerfilDTO getCurrentPerfil() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getCredentials() == null) {
+            throw new UnauthorizedException();
+        }
+
         DecodedJWT decodedJWT = tokenService.validateToken(authentication.getCredentials().toString());
 
         String[] perfilData = decodedJWT.getClaim("perfil").asString().split("-");

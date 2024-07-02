@@ -23,13 +23,13 @@ public class ClienteController {
     }
 
     @GetMapping
-    public List<ClienteDTO> getAllActiveClientes() {
-        return clienteService.findAllActive();
+    public ResponseEntity<List<ClienteDTO>> getAllActiveClientes() {
+        return ResponseEntity.ok(clienteService.findAllActive());
     }
 
     @GetMapping("/inativos")
-    public List<ClienteDTO> getAllInactiveClientes() {
-        return clienteService.findAllInactive();
+    public ResponseEntity<List<ClienteDTO>> getAllInactiveClientes() {
+        return ResponseEntity.ok(clienteService.findAllInactive());
     }
 
     @GetMapping("/{id}")
@@ -44,16 +44,16 @@ public class ClienteController {
         return ResponseEntity.ok(clienteDTO);
     }
 
-    @PostMapping("/{id}/reativar")
-    public ResponseEntity<ClienteDTO> reactivateCliente(@PathVariable Long id) {
-        ClienteDTO reativadoClienteDTO = clienteService.reativarCliente(id);
-        return ResponseEntity.ok(reativadoClienteDTO);
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<ClienteDTO> updateCliente(@PathVariable Long id, @Valid @RequestBody UpdateClienteDTO updateClienteDTO) {
         ClienteDTO updatedClienteDTO = clienteService.updateCliente(id, updateClienteDTO);
         return ResponseEntity.ok(updatedClienteDTO);
+    }
+
+    @PostMapping("/{id}/reativar")
+    public ResponseEntity<ClienteDTO> reactivateCliente(@PathVariable Long id) {
+        ClienteDTO reativadoClienteDTO = clienteService.reativarCliente(id);
+        return ResponseEntity.ok(reativadoClienteDTO);
     }
 
     @DeleteMapping("/{id}")

@@ -3,12 +3,18 @@ package com.mobiauto.backend.application.services;
 import com.mobiauto.backend.application.dtos.Cliente.ClienteDTO;
 import com.mobiauto.backend.application.dtos.Cliente.CreateClienteDTO;
 import com.mobiauto.backend.application.dtos.Cliente.UpdateClienteDTO;
+import com.mobiauto.backend.application.dtos.Perfil.CurrentPerfilDTO;
 import com.mobiauto.backend.application.mappers.ClienteMapper;
-import com.mobiauto.backend.domain.exceptions.Cliente.EmailAlreadyExistsException;
+import com.mobiauto.backend.application.utils.AuthorizationUtils;
+import com.mobiauto.backend.domain.exceptions.Auth.UnauthorizedException;
 import com.mobiauto.backend.domain.exceptions.Cliente.ClienteNotFoundException;
+import com.mobiauto.backend.domain.exceptions.Cliente.EmailAlreadyExistsException;
 import com.mobiauto.backend.domain.models.Cliente;
 import com.mobiauto.backend.domain.repositories.ClienteRepository;
+import com.mobiauto.backend.domain.repositories.OportunidadeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,29 +26,52 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
     private final ClienteMapper clienteMapper;
+    private final AuthorizationUtils authorizationUtils;
+    private final OportunidadeRepository oportunidadeRepository;
 
     @Autowired
-    public ClienteService(ClienteRepository clienteRepository, ClienteMapper clienteMapper) {
+    public ClienteService(ClienteRepository clienteRepository, ClienteMapper clienteMapper,
+                          AuthorizationUtils authorizationUtils, OportunidadeRepository oportunidadeRepository) {
         this.clienteRepository = clienteRepository;
         this.clienteMapper = clienteMapper;
+        this.authorizationUtils = authorizationUtils;
+        this.oportunidadeRepository = oportunidadeRepository;
     }
 
     public List<ClienteDTO> findAllActive() {
-        return clienteRepository.findAllByAtivoTrue().stream()
-                .map(clienteMapper::toDTO)
-                .collect(Collectors.toList());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authorizationUtils.isSuperuser(authentication)) {
+            return clienteRepository.findAllByAtivoTrue().stream()
+                    .map(clienteMapper::toDTO)
+                    .collect(Collectors.toList());
+        } else {
+            CurrentPerfilDTO currentPerfil = authorizationUtils.getCurrentPerfil();
+            return oportunidadeRepository.findClientesByRevendaIdAndAtivo(currentPerfil.revendaId(), true).stream()
+                    .map(clienteMapper::toDTO)
+                    .collect(Collectors.toList());
+        }
     }
 
     public List<ClienteDTO> findAllInactive() {
-        return clienteRepository.findAllByAtivoFalse().stream()
-                .map(clienteMapper::toDTO)
-                .collect(Collectors.toList());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authorizationUtils.isSuperuser(authentication)) {
+            return clienteRepository.findAllByAtivoFalse().stream()
+                    .map(clienteMapper::toDTO)
+                    .collect(Collectors.toList());
+        }
+        throw new UnauthorizedException();
     }
 
     public ClienteDTO findById(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(ClienteNotFoundException::new);
-        return clienteMapper.toDTO(cliente);
+
+        if (authorizationUtils.isSuperuser(authentication) ||
+                hasAccessToRevendaByClienteId(cliente.getId())) {
+            return clienteMapper.toDTO(cliente);
+        }
+        throw new UnauthorizedException();
     }
 
     @Transactional
@@ -72,6 +101,10 @@ public class ClienteService {
 
     @Transactional
     public ClienteDTO reativarCliente(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!authorizationUtils.isSuperuser(authentication)) {
+            throw new UnauthorizedException();
+        }
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(ClienteNotFoundException::new);
         cliente.setAtivo(true);
@@ -81,6 +114,10 @@ public class ClienteService {
 
     @Transactional
     public void delete(Long id, boolean hardDelete) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!authorizationUtils.isSuperuser(authentication)) {
+            throw new UnauthorizedException();
+        }
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(ClienteNotFoundException::new);
         if (hardDelete) {
@@ -89,5 +126,10 @@ public class ClienteService {
             cliente.setAtivo(false);
             clienteRepository.save(cliente);
         }
+    }
+
+    private boolean hasAccessToRevendaByClienteId(Long clienteId) {
+        CurrentPerfilDTO currentPerfil = authorizationUtils.getCurrentPerfil();
+        return oportunidadeRepository.existsByClienteIdAndRevendaId(clienteId, currentPerfil.revendaId());
     }
 }
