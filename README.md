@@ -30,9 +30,56 @@ A aplicação acompanha um arquivo `docker-compose.yml` que permite a execução
 Seguindo esses passos, você deverá ser capaz de executar a aplicação corretamente em um ambiente Docker.
 
 
+# Funcionamento da Aplicação
+
+A aplicação é uma API REST que permite a gestão de revendas, veículos, usuários, perfis, oportunidades, clientes e cargos. Abaixo estão as etapas para utilização da API:
+
+## Registro de Usuário
+- **Endpoint:** `POST api/v1/auth/register`
+- **Corpo da requisição:**
+  ```json
+  {
+    "email": "teste@gmail.com",
+    "senha": "senha",
+    "nome": "Tester"
+  }
+  ```
+
+## Login
+- **Endpoint:** `POST api/v1/auth/login`
+- **Corpo da requisição:**
+  ```json
+  {
+    "email": "teste@gmail.com",
+    "senha": "senha"
+  }
+  ```
+- **Resposta:** Um token JWT será gerado.
+
+## Obtenção de Perfil
+Com o token JWT gerado no login, você terá acesso ao endpoint de Perfil. Todos os outros endpoints estarão bloqueados enquanto você não tiver um Perfil. Para obter um Perfil, é necessário que um Proprietário ou Gerente o cadastre em uma Revenda. Após obter um Perfil, você terá um ID de Perfil que será utilizado para gerar um novo token JWT.
+
+- **Endpoint:** `POST api/v1/auth/perfil`
+- **Corpo da requisição:**
+  ```json
+  {
+    "perfilId": 18
+  }
+  ```
+- **Resposta:** Um novo token JWT será gerado. Este token deverá ser utilizado como Header com o Auth Type Bearer Token para todas as requisições do sistema.
+
+## Permissões de Rotas
+A seção abaixo lista as permissões de cada rota.
+
+> **Nota:** Certifique-se de usar o token JWT atualizado em todas as requisições subsequentes para garantir acesso às funcionalidades da aplicação.
+
+
+
 # Regras de Acesso e Operações dos Endpoints
 
 Para facilitar o entendimento, foi criado um DER (Diagrama de Entidade-Relacionamento) que pode ser visualizado [aqui](DER.png).
+
+Também para sua comodidade, há uma [Collection API](Mobiauto.postman_collection.json) disponível para que você possa testar no Postman, Insomnia, Bruno ou qualquer outra ferramenta de sua preferência.
 
 A ideia da aplicação consiste em:
 
