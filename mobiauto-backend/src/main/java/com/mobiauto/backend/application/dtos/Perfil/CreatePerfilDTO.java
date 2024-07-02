@@ -1,5 +1,6 @@
 package com.mobiauto.backend.application.dtos.Perfil;
 
+import com.mobiauto.backend.domain.enums.CargosEnum;
 import jakarta.validation.constraints.NotNull;
 
 public record CreatePerfilDTO(
@@ -9,6 +10,6 @@ public record CreatePerfilDTO(
         @NotNull(message = "Usuário ID é obrigatório.")
         Long usuarioId,
 
-        @NotNull(message = "Cargo ID é obrigatório.")
-        Long cargoId
+        @NotNull(message = "Cargo é obrigatório.")
+        CargosEnum cargo
 ) {}

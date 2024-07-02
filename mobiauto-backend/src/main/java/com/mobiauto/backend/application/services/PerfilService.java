@@ -7,18 +7,15 @@ import com.mobiauto.backend.application.mappers.PerfilMapper;
 import com.mobiauto.backend.application.utils.AuthorizationUtils;
 import com.mobiauto.backend.domain.enums.CargosEnum;
 import com.mobiauto.backend.domain.exceptions.Auth.UnauthorizedException;
-import com.mobiauto.backend.domain.exceptions.Cargo.CargoNotFoundException;
 import com.mobiauto.backend.domain.exceptions.Perfil.PerfilNotFoundException;
 import com.mobiauto.backend.domain.exceptions.Revenda.RevendaNotFoundException;
 import com.mobiauto.backend.domain.exceptions.Usuario.UsuarioNotFoundException;
 import com.mobiauto.backend.domain.models.Perfil;
 import com.mobiauto.backend.domain.models.Revenda;
 import com.mobiauto.backend.domain.models.Usuario;
-import com.mobiauto.backend.domain.models.Cargo;
 import com.mobiauto.backend.domain.repositories.PerfilRepository;
 import com.mobiauto.backend.domain.repositories.RevendaRepository;
 import com.mobiauto.backend.domain.repositories.UsuarioRepository;
-import com.mobiauto.backend.domain.repositories.CargoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,17 +31,15 @@ public class PerfilService {
     private final PerfilRepository perfilRepository;
     private final UsuarioRepository usuarioRepository;
     private final RevendaRepository revendaRepository;
-    private final CargoRepository cargoRepository;
     private final PerfilMapper perfilMapper;
     private final AuthorizationUtils authorizationUtils;
 
     @Autowired
     public PerfilService(PerfilRepository perfilRepository, PerfilMapper perfilMapper, UsuarioRepository usuarioRepository,
-                         RevendaRepository revendaRepository, CargoRepository cargoRepository, AuthorizationUtils authorizationUtils) {
+                         RevendaRepository revendaRepository, AuthorizationUtils authorizationUtils) {
         this.perfilRepository = perfilRepository;
         this.usuarioRepository = usuarioRepository;
         this.revendaRepository = revendaRepository;
-        this.cargoRepository = cargoRepository;
         this.perfilMapper = perfilMapper;
         this.authorizationUtils = authorizationUtils;
     }
@@ -82,7 +77,7 @@ public class PerfilService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Usuario usuario = (Usuario) authentication.getPrincipal();
 
-        CargosEnum newCargo = CargosEnum.valueOf(createPerfilDTO.cargoId().toString());
+        CargosEnum newCargo = createPerfilDTO.cargo();
 
         if (!authorizationUtils.isAuthorizedToCreatePerfil(createPerfilDTO.revendaId(), newCargo) || !authorizationUtils.canAssignRole(usuario, newCargo)) {
             throw new UnauthorizedException();
@@ -92,10 +87,8 @@ public class PerfilService {
                 .orElseThrow(UsuarioNotFoundException::new);
         Revenda revenda = revendaRepository.findById(createPerfilDTO.revendaId())
                 .orElseThrow(RevendaNotFoundException::new);
-        Cargo cargo = cargoRepository.findById(createPerfilDTO.cargoId())
-                .orElseThrow(CargoNotFoundException::new);
 
-        Perfil perfil = perfilMapper.toEntity(createPerfilDTO, newUsuario, revenda, cargo);
+        Perfil perfil = perfilMapper.toEntity(createPerfilDTO, newUsuario, revenda);
         perfil = perfilRepository.save(perfil);
         return perfilMapper.toDTO(perfil);
     }
@@ -105,7 +98,7 @@ public class PerfilService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Usuario usuario = (Usuario) authentication.getPrincipal();
 
-        CargosEnum newCargo = CargosEnum.valueOf(updatePerfilDTO.cargoId().toString());
+        CargosEnum newCargo = updatePerfilDTO.cargo();
 
         Perfil existingPerfil = perfilRepository.findById(id)
                 .orElseThrow(PerfilNotFoundException::new);
@@ -119,10 +112,7 @@ public class PerfilService {
             throw new UnauthorizedException();
         }
 
-        Cargo cargo = cargoRepository.findById(updatePerfilDTO.cargoId())
-                .orElseThrow(CargoNotFoundException::new);
-
-        perfilMapper.updateEntityFromDTO(updatePerfilDTO, existingPerfil, cargo);
+        perfilMapper.updateEntityFromDTO(updatePerfilDTO, existingPerfil);
         existingPerfil = perfilRepository.save(existingPerfil);
         return perfilMapper.toDTO(existingPerfil);
     }

@@ -4,5 +4,5 @@ public record PerfilDTO(
         Long id,
         Long revendaId,
         Long usuarioId,
-        Long cargoId
+        String cargo
 ) {}

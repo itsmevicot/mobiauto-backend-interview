@@ -2,6 +2,7 @@ package com.mobiauto.backend.application.services;
 
 import com.mobiauto.backend.application.dtos.Oportunidade.OportunidadeDTO;
 import com.mobiauto.backend.application.mappers.OportunidadeMapper;
+import com.mobiauto.backend.domain.enums.CargosEnum;
 import com.mobiauto.backend.domain.enums.StatusOportunidadeEnum;
 import com.mobiauto.backend.domain.models.Oportunidade;
 import com.mobiauto.backend.domain.models.Usuario;
@@ -31,35 +32,43 @@ public class OportunidadeListenerService {
 
     @RabbitListener(queues = RabbitMQConfig.OPORTUNIDADE_QUEUE)
     public void receiveMessage(OportunidadeDTO oportunidadeDTO) {
-        System.out.println("Received message: " + oportunidadeDTO);
+        try {
+            System.out.println("Received message: " + oportunidadeDTO);
 
-        Long revendaId = oportunidadeDTO.revendaId();
-        List<Usuario> assistentes = usuarioRepository.findByPerfisCargoNomeAndPerfisRevendaId("ASSISTENTE", revendaId);
+            Long revendaId = oportunidadeDTO.revendaId();
+            CargosEnum cargo = CargosEnum.ASSISTENTE; // Usando o enum diretamente
 
-        System.out.println("Assistentes found: " + assistentes.size());
+            List<Usuario> assistentes = usuarioRepository.findByPerfisCargoNomeAndPerfisRevendaId(cargo, revendaId);
 
-        assistentes.sort(Comparator
-                .comparingInt((Usuario usuario) -> (int) usuario.getOportunidades().stream()
-                        .filter(o -> o.getStatus() == StatusOportunidadeEnum.NOVO || o.getStatus() == StatusOportunidadeEnum.EM_ATENDIMENTO)
-                        .count())
-                .thenComparing(Usuario::getUltimaOportunidadeRecebida, Comparator.nullsFirst(Comparator.naturalOrder())));
+            System.out.println("Assistentes found: " + assistentes.size());
 
-        if (!assistentes.isEmpty()) {
-            Usuario assistente = assistentes.get(0);
-            Optional<Oportunidade> optionalOportunidade = oportunidadeRepository.findById(oportunidadeDTO.id());
-            if (optionalOportunidade.isPresent()) {
-                Oportunidade oportunidade = optionalOportunidade.get();
-                System.out.println("Assigning to assistente: " + assistente.getId());
-                oportunidade.setResponsavelAtendimento(assistente);
-                oportunidade.setDataAtribuicao(LocalDateTime.now());
-                oportunidadeRepository.save(oportunidade);
-                System.out.println("Oportunidade assigned successfully.");
+            assistentes.sort(Comparator
+                    .comparingInt((Usuario usuario) -> (int) usuario.getOportunidades().stream()
+                            .filter(o -> o.getStatus() == StatusOportunidadeEnum.NOVO || o.getStatus() == StatusOportunidadeEnum.EM_ATENDIMENTO)
+                            .count())
+                    .thenComparing(Usuario::getUltimaOportunidadeRecebida, Comparator.nullsFirst(Comparator.naturalOrder())));
+
+            if (!assistentes.isEmpty()) {
+                Usuario assistente = assistentes.get(0);
+                Optional<Oportunidade> optionalOportunidade = oportunidadeRepository.findById(oportunidadeDTO.id());
+                if (optionalOportunidade.isPresent()) {
+                    Oportunidade oportunidade = optionalOportunidade.get();
+                    System.out.println("Assigning to assistente: " + assistente.getId());
+                    oportunidade.setResponsavelAtendimento(assistente);
+                    oportunidade.setDataAtribuicao(LocalDateTime.now());
+                    oportunidadeRepository.save(oportunidade);
+                    System.out.println("Oportunidade assigned successfully. ResponsavelAtendimentoId: " + oportunidade.getResponsavelAtendimento().getId());
+                } else {
+                    System.err.println("Oportunidade not found with ID: " + oportunidadeDTO.id());
+                }
             } else {
-                System.err.println("Oportunidade not found with ID: " + oportunidadeDTO.id());
+                System.err.println("No assistants available for revenda ID " + revendaId);
+                throw new RuntimeException("No assistants available for revenda ID " + revendaId);
             }
-        } else {
-            System.err.println("No assistants available for revenda ID " + revendaId);
-            throw new RuntimeException("No assistants available for revenda ID " + revendaId);
+        } catch (Exception e) {
+            System.err.println("Error processing message: " + e.getMessage());
+            e.printStackTrace();
         }
     }
+
 }

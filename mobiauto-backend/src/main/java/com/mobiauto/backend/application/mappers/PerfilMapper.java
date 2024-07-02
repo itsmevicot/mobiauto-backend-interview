@@ -6,7 +6,6 @@ import com.mobiauto.backend.application.dtos.Perfil.UpdatePerfilDTO;
 import com.mobiauto.backend.domain.models.Perfil;
 import com.mobiauto.backend.domain.models.Usuario;
 import com.mobiauto.backend.domain.models.Revenda;
-import com.mobiauto.backend.domain.models.Cargo;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,19 +16,19 @@ public class PerfilMapper {
                 perfil.getId(),
                 perfil.getRevenda().getId(),
                 perfil.getUsuario().getId(),
-                perfil.getCargo().getId()
+                perfil.getCargo().name()
         );
     }
 
-    public Perfil toEntity(CreatePerfilDTO createPerfilDTO, Usuario usuario, Revenda revenda, Cargo cargo) {
+    public Perfil toEntity(CreatePerfilDTO createPerfilDTO, Usuario usuario, Revenda revenda) {
         Perfil perfil = new Perfil();
         perfil.setRevenda(revenda);
         perfil.setUsuario(usuario);
-        perfil.setCargo(cargo);
+        perfil.setCargo(createPerfilDTO.cargo());
         return perfil;
     }
 
-    public void updateEntityFromDTO(UpdatePerfilDTO updatePerfilDTO, Perfil perfil, Cargo cargo) {
-        perfil.setCargo(cargo);
+    public void updateEntityFromDTO(UpdatePerfilDTO updatePerfilDTO, Perfil perfil) {
+        perfil.setCargo(updatePerfilDTO.cargo());
     }
 }

@@ -41,6 +41,9 @@ public class Usuario implements UserDetails {
     private List<Oportunidade> oportunidades;
 
     @Column(nullable = false)
+    private boolean isSuperuser;
+
+    @Column(nullable = false)
     private boolean ativo = true;
 
     @Override
@@ -59,6 +62,10 @@ public class Usuario implements UserDetails {
     @Override
     public String getUsername() {
         return email;
+    }
+
+    public boolean getIsSuperuser() {
+        return isSuperuser;
     }
 
     public LocalDateTime getUltimaOportunidadeRecebida() {

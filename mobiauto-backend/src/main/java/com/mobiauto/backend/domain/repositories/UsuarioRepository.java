@@ -15,18 +15,12 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByEmail(String email);
     boolean existsByEmail(String email);
 
-    @Query("SELECT COALESCE(MAX(CAST(SUBSTRING(u.codigo, 5) AS int)), 0) FROM Usuario u WHERE u.codigo LIKE 'USUAR%'")
-    int findMaxCodigo();
-
     @Query("SELECT u FROM Usuario u JOIN u.perfis p WHERE u.ativo = true AND p.revenda.id = :revendaId")
     List<Usuario> findAllByAtivoTrueAndRevendaId(@Param("revendaId") Long revendaId);
 
     @Query("SELECT u FROM Usuario u JOIN u.perfis p WHERE u.ativo = false AND p.revenda.id = :revendaId")
     List<Usuario> findAllByAtivoFalseAndRevendaId(@Param("revendaId") Long revendaId);
 
-    @Query("SELECT u FROM Usuario u JOIN u.perfis p WHERE p.revenda.id = :revendaId AND p.cargo.nome = :role")
-    List<Usuario> findAllByRevendaAndRole(Long revendaId, CargosEnum role);
-
-    @Query("SELECT u FROM Usuario u JOIN u.perfis p WHERE p.cargo.nome = :cargoNome AND p.revenda.id = :revendaId")
-    List<Usuario> findByPerfisCargoNomeAndPerfisRevendaId(String cargoNome, Long revendaId);
+    @Query("SELECT u FROM Usuario u JOIN u.perfis p WHERE p.cargo = :cargoNome AND p.revenda.id = :revendaId")
+    List<Usuario> findByPerfisCargoNomeAndPerfisRevendaId(@Param("cargoNome") CargosEnum cargoNome, @Param("revendaId") Long revendaId);
 }

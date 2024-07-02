@@ -1,6 +1,8 @@
+-- Criando os tipos ENUM
 CREATE TYPE cargos_enum AS ENUM ('PROPRIETARIO', 'GERENTE', 'ASSISTENTE');
 CREATE TYPE status_oportunidade_enum AS ENUM ('NOVO', 'EM_ATENDIMENTO', 'CONCLUIDO');
 
+-- Tabela revenda
 CREATE TABLE revenda (
                          id SERIAL PRIMARY KEY,
                          cnpj VARCHAR(255) UNIQUE NOT NULL,
@@ -9,6 +11,7 @@ CREATE TABLE revenda (
                          ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+-- Tabela cliente
 CREATE TABLE cliente (
                          id SERIAL PRIMARY KEY,
                          nome VARCHAR(255) NOT NULL,
@@ -17,27 +20,27 @@ CREATE TABLE cliente (
                          ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE cargo (
-                       id SERIAL PRIMARY KEY,
-                       nome cargos_enum NOT NULL
-);
-
+-- Tabela usuario
 CREATE TABLE usuario (
                          id SERIAL PRIMARY KEY,
                          codigo VARCHAR(255) UNIQUE NOT NULL,
                          nome VARCHAR(255) NOT NULL,
                          email VARCHAR(255) UNIQUE NOT NULL,
                          senha VARCHAR(255) NOT NULL,
+                         is_superuser BOOLEAN NOT NULL DEFAULT FALSE,
                          ativo BOOLEAN NOT NULL DEFAULT TRUE
+
 );
 
+-- Tabela perfil
 CREATE TABLE perfil (
                         id SERIAL PRIMARY KEY,
                         revenda_id INT REFERENCES revenda(id) NOT NULL,
                         usuario_id INT REFERENCES usuario(id) NOT NULL,
-                        cargo_id INT REFERENCES cargo(id) NOT NULL
+                        cargo cargos_enum NOT NULL -- Usando cargos_enum diretamente
 );
 
+-- Tabela veiculo
 CREATE TABLE veiculo (
                          id SERIAL PRIMARY KEY,
                          codigo VARCHAR(255) UNIQUE NOT NULL,
@@ -49,6 +52,7 @@ CREATE TABLE veiculo (
                          revenda_id INT REFERENCES revenda(id) NOT NULL
 );
 
+-- Tabela oportunidade
 CREATE TABLE oportunidade (
                               id SERIAL PRIMARY KEY,
                               codigo VARCHAR(255) UNIQUE NOT NULL,
@@ -62,7 +66,5 @@ CREATE TABLE oportunidade (
                               responsavel_atendimento_id INT REFERENCES usuario(id) NOT NULL
 );
 
-CREATE SEQUENCE seq_usuario START 1;
-CREATE SEQUENCE seq_revenda START 1;
-CREATE SEQUENCE seq_veiculo START 1;
-CREATE SEQUENCE seq_oportunidade START 1;
+INSERT INTO usuario (codigo, nome, email, senha, ativo, is_superuser) VALUES
+('U100', 'Super User', 'admin@admin', 'admin', TRUE, TRUE);

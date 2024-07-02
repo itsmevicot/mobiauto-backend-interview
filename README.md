@@ -21,18 +21,36 @@ A aplicação acompanha um arquivo `docker-compose.yml` que permite a execução
     ```
   - Isso iniciará três containers: o banco de dados, a aplicação e o RabbitMQ.
 
-3. **Configurar a IDE:**
-  - Configure o perfil a ser usado na sua IDE:
-    - **Local:** Caso não utilize Docker.
-    - **Docker:** Caso utilize Docker.
-  - Configure as variáveis de ambiente na sua IDE de acordo com o perfil escolhido.
+3. ## Configurar a IDE
 
-Seguindo esses passos, você deverá ser capaz de executar a aplicação corretamente em um ambiente Docker.
+1. **Configure o perfil a ser usado na sua IDE:**
+  - **Local:** Caso não utilize Docker.
+  - **Docker:** Caso utilize Docker.
+
+2. **Configure as variáveis de ambiente na sua IDE de acordo com o perfil escolhido.**
+
+### Exemplo de Variáveis de Ambiente
+
+- **Local:**
+  - `POSTGRES_DB=mobiauto`
+  - `POSTGRES_USER=mobiauto_user`
+  - `POSTGRES_PASSWORD=mobiauto_password`
+  - `SPRING_RABBITMQ_HOST=localhost`
+  - `SPRING_RABBITMQ_USERNAME=guest`
+  - `SPRING_RABBITMQ_PASSWORD=guest`
+
+- **Docker:**
+  - `POSTGRES_DB=mobiauto`
+  - `POSTGRES_USER=mobiauto_user`
+  - `POSTGRES_PASSWORD=mobiauto_password`
+  - `SPRING_RABBITMQ_HOST=rabbitmq`
+  - `SPRING_RABBITMQ_USERNAME=guest`
+  - `SPRING_RABBITMQ_PASSWORD=guest`
 
 
 # Funcionamento da Aplicação
 
-A aplicação é uma API REST que permite a gestão de revendas, veículos, usuários, perfis, oportunidades, clientes e cargos.
+A aplicação é uma API REST que permite a gestão de revendas, veículos, usuários, perfis, oportunidades e clientes. Os cargos são Enums que definem as permissões de acesso dos usuários.
 É possível visualizar os requisitos do teste [aqui](Senior%20Backend%20Developers%20Interview.pdf).
 
 Abaixo estão as etapas para utilização da API:
@@ -266,34 +284,10 @@ A ideia da aplicação consiste em:
 - **DELETE /api/v1/clientes/{id}**
   - **Admin:** Pode deletar clientes. A deleção pode ser lógica ou física.
 
-## 7. Cargo
-
-### Regras Gerais
-- **Autenticação:** Todas as operações requerem que o usuário esteja autenticado como superusuário.
-- **Verificação de Acesso:** Apenas superusuários têm permissão para executar as operações.
-
-### Operações e Regras Específicas
-- **GET /api/v1/cargos**
-  - **Superusuário:** Pode visualizar todos os cargos.
-
-- **GET /api/v1/cargos/{id}**
-  - **Superusuário:** Pode visualizar um cargo específico pelo ID.
-
-- **POST /api/v1/cargos**
-  - **Superusuário:** Pode criar um novo cargo.
-
-- **PUT /api/v1/cargos/{id}**
-  - **Superusuário:** Pode atualizar um cargo específico pelo ID.
-
-- **DELETE /api/v1/cargos/{id}**
-  - **Superusuário:** Pode deletar um cargo específico pelo ID.
-
 
 # Pontos de Melhoria
 
 - Não foram ainda implementados os testes unitários e de integração.
 - Não foi ainda implementado uma ferramenta de documentação automática como o Swagger.
 - É possível fazer a aplicação utilizando NoSQL como MongoDB para se aproveitar da flexibilidade do schema.
-- O RabbitMQ não está funcionando como deveria.
-- Não está sendo realizada a conexão do RabbitMQ com a aplicação sem o uso do Docker.
 - É preciso refatorar a aplicação para enchugar o código e melhorar a manutenibilidade.

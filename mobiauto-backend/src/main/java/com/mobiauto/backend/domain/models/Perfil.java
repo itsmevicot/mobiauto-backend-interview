@@ -1,5 +1,6 @@
 package com.mobiauto.backend.domain.models;
 
+import com.mobiauto.backend.domain.enums.CargosEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,12 +22,13 @@ public class Perfil implements GrantedAuthority {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne
-    @JoinColumn(name = "cargo_id", nullable = false)
-    private Cargo cargo;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cargo", nullable = false)
+    private CargosEnum cargo;
+
 
     @Override
     public String getAuthority() {
-        return cargo.getNome().name();
+        return cargo.name();
     }
 }

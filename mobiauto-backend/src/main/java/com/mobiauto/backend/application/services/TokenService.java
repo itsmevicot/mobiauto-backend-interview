@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,14 +40,20 @@ public class TokenService {
         }
     }
 
-
     public String generateLoginToken(Usuario usuario) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(this.secret);
+            List<String> roles = new ArrayList<>();
+            roles.add("LOGIN_ONLY");
+
+            if (usuario.getIsSuperuser()) {
+                roles.add("ADMIN");
+            }
+
             return JWT.create()
                     .withIssuer("auth-api")
                     .withSubject(usuario.getEmail())
-                    .withClaim("roles", List.of("LOGIN_ONLY"))
+                    .withClaim("roles", roles)
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
         } catch (JWTCreationException exception) {
@@ -57,11 +64,20 @@ public class TokenService {
     public String generatePerfilToken(Usuario usuario, Perfil perfil) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(this.secret);
-            String perfilData = perfil != null ? perfil.getRevenda().getId() + "-" + perfil.getCargo().getNome() : "NONE";
+            String perfilData = perfil != null ? perfil.getRevenda().getId() + "-" + perfil.getCargo().name() : "NONE";
+
+            List<String> roles = usuario.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+
+            if (usuario.getIsSuperuser()) {
+                roles.add("ADMIN");
+            }
+
             return JWT.create()
                     .withIssuer("auth-api")
                     .withSubject(usuario.getEmail())
-                    .withClaim("roles", usuario.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+                    .withClaim("roles", roles)
                     .withClaim("perfil", perfilData)
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
@@ -69,7 +85,6 @@ public class TokenService {
             throw new RuntimeException("Erro ao gerar token. Tente novamente.");
         }
     }
-
 
     private Instant genExpirationDate() {
         int expirationTime = 12;

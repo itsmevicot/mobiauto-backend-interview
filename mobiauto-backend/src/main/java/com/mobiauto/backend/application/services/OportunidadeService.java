@@ -48,13 +48,15 @@ public class OportunidadeService {
     private final CodeGeneratorUtils codeGeneratorUtil;
     private final AuthorizationUtils authorizationUtils;
     private final RabbitTemplate rabbitTemplate;
+    private final CustomUserDetailsService customUserDetailsService;
+
 
     @Autowired
     public OportunidadeService(OportunidadeRepository oportunidadeRepository, OportunidadeMapper oportunidadeMapper,
                                ClienteRepository clienteRepository, RevendaRepository revendaRepository,
                                VeiculoRepository veiculoRepository, UsuarioRepository usuarioRepository,
                                CodeGeneratorUtils codeGeneratorUtil, AuthorizationUtils authorizationUtils,
-                               RabbitTemplate rabbitTemplate) {
+                               RabbitTemplate rabbitTemplate, CustomUserDetailsService customUserDetailsService) {
         this.oportunidadeRepository = oportunidadeRepository;
         this.oportunidadeMapper = oportunidadeMapper;
         this.clienteRepository = clienteRepository;
@@ -64,6 +66,7 @@ public class OportunidadeService {
         this.codeGeneratorUtil = codeGeneratorUtil;
         this.authorizationUtils = authorizationUtils;
         this.rabbitTemplate = rabbitTemplate;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     public List<OportunidadeDTO> findAll() {
@@ -116,13 +119,12 @@ public class OportunidadeService {
         Oportunidade oportunidade = oportunidadeMapper.toEntity(createOportunidadeDTO, cliente, revenda, veiculo);
         oportunidade.setCodigo(codeGeneratorUtil.generateOportunidadeCodigo());
         oportunidade.setStatus(StatusOportunidadeEnum.NOVO);
-        oportunidade = oportunidadeRepository.save(oportunidade);
-
         OportunidadeDTO oportunidadeDTO = oportunidadeMapper.toDTO(oportunidade);
         rabbitTemplate.convertAndSend(RabbitMQConfig.OPORTUNIDADE_QUEUE, oportunidadeDTO);
-
+        oportunidadeRepository.save(oportunidade);
         return oportunidadeDTO;
     }
+
 
 
     @Transactional
@@ -193,9 +195,6 @@ public class OportunidadeService {
 
     @Transactional
     public OportunidadeDTO transferirOportunidade(Long oportunidadeId, Long novoResponsavelId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuario = (Usuario) authentication.getPrincipal();
-
         if (!authorizationUtils.canTransferOportunidade()) {
             throw new UnauthorizedException();
         }
@@ -210,29 +209,5 @@ public class OportunidadeService {
 
         oportunidade = oportunidadeRepository.save(oportunidade);
         return oportunidadeMapper.toDTO(oportunidade);
-    }
-
-    @Transactional
-    public void distributeOportunidade(OportunidadeDTO oportunidadeDTO) {
-        Revenda revenda = revendaRepository.findById(oportunidadeDTO.revendaId())
-                .orElseThrow(RevendaNotFoundException::new);
-
-        List<Usuario> assistentes = usuarioRepository.findByPerfisCargoNomeAndPerfisRevendaId(CargosEnum.ASSISTENTE.name(), revenda.getId());
-
-        assistentes.sort(Comparator
-                .comparingInt((Usuario u) -> (int) u.getOportunidades().stream()
-                        .filter(o -> o.getStatus() == StatusOportunidadeEnum.NOVO || o.getStatus() == StatusOportunidadeEnum.EM_ATENDIMENTO)
-                        .count())
-                .thenComparing(Usuario::getUltimaOportunidadeRecebida, Comparator.nullsFirst(Comparator.naturalOrder())));
-
-        if (!assistentes.isEmpty()) {
-            Usuario assistente = assistentes.get(0);
-            Oportunidade oportunidade = oportunidadeMapper.toEntityFromDTO(oportunidadeDTO);
-            oportunidade.setResponsavelAtendimento(assistente);
-            oportunidade.setDataAtribuicao(LocalDateTime.now());
-            oportunidadeRepository.save(oportunidade);
-        } else {
-            throw new RuntimeException("No assistants available for revenda ID " + revenda.getId());
-        }
     }
 }
