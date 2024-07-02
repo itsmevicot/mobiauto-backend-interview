@@ -1,12 +1,10 @@
 package com.mobiauto.backend.presentation.controllers;
 
-import com.mobiauto.backend.application.services.CargoService;
 import com.mobiauto.backend.domain.models.Cargo;
+import com.mobiauto.backend.application.services.CargoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/cargos")
@@ -26,16 +24,15 @@ public class CargoController {
     }
 
     @PostMapping
-    public Cargo createCargo(@RequestBody Cargo cargo) {
-        return cargoService.save(cargo);
+    public ResponseEntity<Cargo> createCargo(@RequestBody Cargo cargo) {
+        Cargo createdCargo = cargoService.save(cargo);
+        return ResponseEntity.ok(createdCargo);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cargo> updateCargo(@PathVariable Long id, @RequestBody Cargo cargoDetails) {
-        Cargo cargo = cargoService.findById(id);
-        cargo.setNome(cargoDetails.getNome());
-        cargo.setPerfis(cargoDetails.getPerfis());
-        final Cargo updatedCargo = cargoService.save(cargo);
+    public ResponseEntity<Cargo> updateCargo(@PathVariable Long id, @RequestBody Cargo cargo) {
+        cargo.setId(id); // Ensure the ID is set correctly
+        Cargo updatedCargo = cargoService.save(cargo);
         return ResponseEntity.ok(updatedCargo);
     }
 
