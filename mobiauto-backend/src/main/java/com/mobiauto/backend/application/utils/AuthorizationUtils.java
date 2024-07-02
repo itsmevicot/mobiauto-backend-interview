@@ -77,9 +77,16 @@ public class AuthorizationUtils {
             throw new UnauthorizedException();
         }
 
-        DecodedJWT decodedJWT = tokenService.validateToken(authentication.getCredentials().toString());
+        String token = authentication.getCredentials().toString();
 
-        String[] perfilData = decodedJWT.getClaim("perfil").asString().split("-");
+        DecodedJWT decodedJWT = tokenService.validateToken(token);
+        String perfilClaim = decodedJWT.getClaim("perfil").asString();
+
+        if (perfilClaim == null) {
+            throw new UnauthorizedException();
+        }
+
+        String[] perfilData = perfilClaim.split("-");
         Long revendaId = Long.valueOf(perfilData[0]);
         CargosEnum cargoNome = CargosEnum.valueOf(perfilData[1]);
 

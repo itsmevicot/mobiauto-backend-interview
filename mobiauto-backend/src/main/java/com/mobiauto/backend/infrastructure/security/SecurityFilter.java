@@ -1,5 +1,6 @@
 package com.mobiauto.backend.infrastructure.security;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mobiauto.backend.application.services.TokenService;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -37,36 +39,27 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
-        try {
-            var token = this.recoverToken(request);
-            if (token != null) {
+        String token = recoverToken(request);
+        if (token != null) {
+            try {
                 DecodedJWT decodedJWT = tokenService.validateToken(token);
                 String email = decodedJWT.getSubject();
-                Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
-
-                if (usuario.isEmpty()) throw new UsuarioNotFoundException();
-
-                var authorities = decodedJWT.getClaim("roles").asList(String.class);
-                if (authorities == null) {
-                    authorities = List.of("LOGIN_ONLY");
-                }
-
-                var grantedAuthorities = authorities.stream()
+                List<GrantedAuthority> authorities = decodedJWT.getClaim("roles").asList(String.class).stream()
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
-
-                var authentication = new UsernamePasswordAuthenticationToken(usuario.get(), null, grantedAuthorities);
-
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email, token, authorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
-            filterChain.doFilter(request, response);
 
-        } catch (IOException e) {
-            setErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, response, e);
-        } catch (Exception e) {
-            setErrorResponse(HttpStatus.UNAUTHORIZED, response, e);
+
+            } catch (JWTVerificationException exception) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token inválido ou expirado.");
+                return;
+            }
         }
+        filterChain.doFilter(request, response);
     }
+
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {

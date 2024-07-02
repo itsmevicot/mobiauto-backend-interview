@@ -51,14 +51,17 @@ public class PerfilService {
 
     public List<PerfilDTO> findAll() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (!authorizationUtils.isSuperuser(authentication)) {
-            throw new UnauthorizedException();
+        if (authorizationUtils.isSuperuser(authentication)) {
+            return perfilRepository.findAll().stream()
+                    .map(perfilMapper::toDTO)
+                    .collect(Collectors.toList());
+        } else if (authorizationUtils.hasRole(CargosEnum.PROPRIETARIO) || authorizationUtils.hasRole(CargosEnum.GERENTE)) {
+            Long revendaId = authorizationUtils.getCurrentPerfil().revendaId();
+            return perfilRepository.findByRevendaId(revendaId).stream()
+                    .map(perfilMapper::toDTO)
+                    .collect(Collectors.toList());
         }
-
-        return perfilRepository.findAll().stream()
-                .map(perfilMapper::toDTO)
-                .collect(Collectors.toList());
+        throw new UnauthorizedException();
     }
 
     public PerfilDTO findById(Long id) {

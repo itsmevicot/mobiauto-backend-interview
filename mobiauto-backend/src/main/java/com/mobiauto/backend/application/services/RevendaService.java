@@ -9,7 +9,6 @@ import com.mobiauto.backend.domain.enums.CargosEnum;
 import com.mobiauto.backend.domain.exceptions.Auth.UnauthorizedException;
 import com.mobiauto.backend.domain.exceptions.Revenda.RevendaNotFoundException;
 import com.mobiauto.backend.domain.models.Revenda;
-import com.mobiauto.backend.domain.models.Usuario;
 import com.mobiauto.backend.domain.repositories.RevendaRepository;
 import com.mobiauto.backend.application.utils.CodeGeneratorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 
 @Service
 public class RevendaService {
@@ -41,12 +39,16 @@ public class RevendaService {
 
     public List<RevendaDTO> findAll() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!authorizationUtils.isSuperuser(authentication)) {
-            throw new UnauthorizedException();
+        if (authorizationUtils.isSuperuser(authentication)) {
+            return revendaRepository.findAll().stream()
+                    .map(revendaMapper::toDTO)
+                    .collect(Collectors.toList());
+        } else {
+            Long revendaId = authorizationUtils.getCurrentPerfil().revendaId();
+            return revendaRepository.findById(revendaId).stream()
+                    .map(revendaMapper::toDTO)
+                    .collect(Collectors.toList());
         }
-        return revendaRepository.findAll().stream()
-                .map(revendaMapper::toDTO)
-                .collect(Collectors.toList());
     }
 
     public RevendaDTO findById(Long id) {
@@ -54,11 +56,11 @@ public class RevendaService {
         Revenda revenda = revendaRepository.findById(id)
                 .orElseThrow(RevendaNotFoundException::new);
 
-        if (!authorizationUtils.isSuperuser(authentication) &&
-                !authorizationUtils.hasAccessToRevenda(revenda.getId())) {
-            throw new UnauthorizedException();
+        if (authorizationUtils.isSuperuser(authentication) ||
+                authorizationUtils.hasAccessToRevenda(revenda.getId())) {
+            return revendaMapper.toDTO(revenda);
         }
-        return revendaMapper.toDTO(revenda);
+        throw new UnauthorizedException();
     }
 
     @Transactional
@@ -80,10 +82,10 @@ public class RevendaService {
                 .orElseThrow(RevendaNotFoundException::new);
 
         boolean isSuperuser = authorizationUtils.isSuperuser(authentication);
-        boolean isProprietarioDaRevenda = authorizationUtils.hasRole(CargosEnum.PROPRIETARIO) &&
-                authorizationUtils.hasAccessToRevenda(existingRevenda.getId());
+        boolean isProprietario = authorizationUtils.hasRole(CargosEnum.PROPRIETARIO);
+        boolean hasAccessToRevenda = authorizationUtils.hasAccessToRevenda(existingRevenda.getId());
 
-        if (!isSuperuser && !isProprietarioDaRevenda) {
+        if (!isSuperuser && !(isProprietario && hasAccessToRevenda)) {
             throw new UnauthorizedException();
         }
 
@@ -91,7 +93,6 @@ public class RevendaService {
         existingRevenda = revendaRepository.save(existingRevenda);
         return revendaMapper.toDTO(existingRevenda);
     }
-
 
     @Transactional
     public void deleteRevenda(Long id) {

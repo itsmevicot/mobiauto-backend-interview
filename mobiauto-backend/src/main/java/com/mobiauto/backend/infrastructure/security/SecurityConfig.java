@@ -32,14 +32,16 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/v3/api-docs.yaml", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/perfil").hasAuthority("LOGIN_ONLY")
                         .requestMatchers(HttpMethod.GET, "/api/v1/public/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/admin/**").hasRole("ADMINISTRADOR")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/proprietario/**").hasAnyRole("ADMINISTRADOR", "PROPRIETARIO")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/gerente/**").hasAnyRole("ADMINISTRADOR", "PROPRIETARIO", "GERENTE")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/proprietario/**").hasAnyRole("ADMIN", "PROPRIETARIO")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/gerente/**").hasAnyRole("ADMIN", "PROPRIETARIO", "GERENTE")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/oportunidades").hasAnyRole("PROPRIETARIO", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
+
 
 
     @Bean
