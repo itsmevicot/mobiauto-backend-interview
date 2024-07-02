@@ -141,6 +141,10 @@ public class OportunidadeService {
 
     @Transactional
     public void deleteOportunidade(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!authorizationUtils.isSuperuser(authentication)) {
+            throw new UnauthorizedException();
+        }
         Oportunidade oportunidade = oportunidadeRepository.findById(id)
                 .orElseThrow(OportunidadeNotFoundException::new);
         oportunidadeRepository.delete(oportunidade);
@@ -207,7 +211,7 @@ public class OportunidadeService {
                 .comparingInt((Usuario u) -> (int) u.getOportunidades().stream()
                         .filter(o -> o.getStatus() == StatusOportunidadeEnum.NOVO || o.getStatus() == StatusOportunidadeEnum.EM_ATENDIMENTO)
                         .count())
-                .thenComparing(Comparator.comparing(Usuario::getUltimaOportunidadeRecebida, Comparator.nullsFirst(Comparator.naturalOrder()))));
+                .thenComparing(Usuario::getUltimaOportunidadeRecebida, Comparator.nullsFirst(Comparator.naturalOrder())));
 
         if (!assistentes.isEmpty()) {
             Usuario assistente = assistentes.get(0);
