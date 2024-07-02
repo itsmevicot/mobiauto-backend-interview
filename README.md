@@ -365,5 +365,5 @@ A ideia da aplicação consiste em:
 
 - Não foram ainda implementados os testes unitários e de integração.
 - Não foi ainda implementado uma ferramenta de documentação automática como o Swagger.
-- É possível fazer a aplicação utilizando NoSQL como MongoDB para se aproveitar da flexibilidade do schema.
-- É preciso refatorar a aplicação para enchugar o código e melhorar a manutenibilidade.
+- É possível fazer a aplicação utilizando NoSQL (ex: MongoDB, já que o JPA oferece o MongoRepository) para se aproveitar da flexibilidade do schema.
+- É preciso refatorar a aplicação para enxugar o código e melhorar a manutenibilidade.
