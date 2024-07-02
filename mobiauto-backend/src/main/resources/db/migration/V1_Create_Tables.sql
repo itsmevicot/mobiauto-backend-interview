@@ -65,6 +65,3 @@ CREATE TABLE oportunidade (
                               veiculo_id INT REFERENCES veiculo(id) NOT NULL,
                               responsavel_atendimento_id INT REFERENCES usuario(id) NOT NULL
 );
-
-INSERT INTO usuario (codigo, nome, email, senha, ativo, is_superuser) VALUES
-('U100', 'Super User', 'admin@admin', 'admin', TRUE, TRUE);

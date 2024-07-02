@@ -36,7 +36,7 @@ public class OportunidadeListenerService {
             System.out.println("Received message: " + oportunidadeDTO);
 
             Long revendaId = oportunidadeDTO.revendaId();
-            CargosEnum cargo = CargosEnum.ASSISTENTE; // Usando o enum diretamente
+            CargosEnum cargo = CargosEnum.ASSISTENTE;
 
             List<Usuario> assistentes = usuarioRepository.findByPerfisCargoNomeAndPerfisRevendaId(cargo, revendaId);
 

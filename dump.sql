@@ -7,22 +7,23 @@ INSERT INTO revenda (cnpj, codigo, nome_social, ativo) VALUES
                                                            ('34567890000122', 'R003', 'Revenda C', TRUE);
 
 -- Usuarios
-INSERT INTO usuario (codigo, nome, email, senha, ativo) VALUES
-                                                            ('U001', 'Proprietario A', 'proprietario.a@example.com', 'password', TRUE),
-                                                            ('U002', 'Gerente A', 'gerente.a@example.com', 'password', TRUE),
-                                                            ('U003', 'Assistente A1', 'assistente.a1@example.com', 'password', TRUE),
-                                                            ('U004', 'Assistente A2', 'assistente.a2@example.com', 'password', TRUE),
-                                                            ('U005', 'Assistente A3', 'assistente.a3@example.com', 'password', TRUE),
-                                                            ('U006', 'Proprietario B', 'proprietario.b@example.com', 'password', TRUE),
-                                                            ('U007', 'Gerente B', 'gerente.b@example.com', 'password', TRUE),
-                                                            ('U008', 'Assistente B1', 'assistente.b1@example.com', 'password', TRUE),
-                                                            ('U009', 'Assistente B2', 'assistente.b2@example.com', 'password', TRUE),
-                                                            ('U010', 'Assistente B3', 'assistente.b3@example.com', 'password', TRUE),
-                                                            ('U011', 'Proprietario C', 'proprietario.c@example.com', 'password', TRUE),
-                                                            ('U012', 'Gerente C', 'gerente.c@example.com', 'password', TRUE),
-                                                            ('U013', 'Assistente C1', 'assistente.c1@example.com', 'password', TRUE),
-                                                            ('U014', 'Assistente C2', 'assistente.c2@example.com', 'password', TRUE),
-                                                            ('U015', 'Assistente C3', 'assistente.c3@example.com', 'password', TRUE);
+INSERT INTO usuario (codigo, nome, email, senha, ativo, is_superuser) VALUES
+                                                            ('U100', 'Super User', 'admin@admin', 'admin', TRUE, TRUE),
+                                                            ('U001', 'Proprietario A', 'proprietario.a@example.com', 'password', TRUE, FALSE),
+                                                            ('U002', 'Gerente A', 'gerente.a@example.com', 'password', TRUE, FALSE),
+                                                            ('U003', 'Assistente A1', 'assistente.a1@example.com', 'password', TRUE, FALSE),
+                                                            ('U004', 'Assistente A2', 'assistente.a2@example.com', 'password', TRUE, FALSE),
+                                                            ('U005', 'Assistente A3', 'assistente.a3@example.com', 'password', TRUE, FALSE),
+                                                            ('U006', 'Proprietario B', 'proprietario.b@example.com', 'password', TRUE, FALSE),
+                                                            ('U007', 'Gerente B', 'gerente.b@example.com', 'password', TRUE, FALSE),
+                                                            ('U008', 'Assistente B1', 'assistente.b1@example.com', 'password', TRUE, FALSE),
+                                                            ('U009', 'Assistente B2', 'assistente.b2@example.com', 'password', TRUE, FALSE),
+                                                            ('U010', 'Assistente B3', 'assistente.b3@example.com', 'password', TRUE, FALSE),
+                                                            ('U011', 'Proprietario C', 'proprietario.c@example.com', 'password', TRUE, FALSE),
+                                                            ('U012', 'Gerente C', 'gerente.c@example.com', 'password', TRUE, FALSE),
+                                                            ('U013', 'Assistente C1', 'assistente.c1@example.com', 'password', TRUE, FALSE),
+                                                            ('U014', 'Assistente C2', 'assistente.c2@example.com', 'password', TRUE, FALSE),
+                                                            ('U015', 'Assistente C3', 'assistente.c3@example.com', 'password', TRUE, FALSE);
 
 -- Perfis para Revenda A
 INSERT INTO perfil (revenda_id, usuario_id, cargo) VALUES

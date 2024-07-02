@@ -106,8 +106,6 @@ public class UsuarioService {
     @Transactional
     public UsuarioDTO updateUsuario(Long id, UpdateUsuarioDTO updateUsuarioDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // Converta o principal para um objeto Usuario
         Usuario currentUsuario;
         if (authentication.getPrincipal() instanceof Usuario) {
             currentUsuario = (Usuario) authentication.getPrincipal();
