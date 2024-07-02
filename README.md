@@ -1,5 +1,79 @@
 # Mobiauto
 
+Mobiauto é uma API para a venda de veículos através de oportunidades, oferecida por revendas que possuem usuários que fazem as vendas para os clientes.
+
+## Arquitetura da Aplicação
+
+A aplicação segue a [Arquitetura Cebola (Onion Architecture)](https://www.macoratti.net/21/05/net_onion1.htm), um padrão que promove a separação de responsabilidades e a inversão de dependências, conforme os princípios do Domain-Driven Design (DDD). A aplicação está organizada em camadas distintas, cada uma com suas responsabilidades bem definidas.
+
+## Camadas da Arquitetura
+
+### Application
+Orquestra chamadas entre as camadas de domínio e infraestrutura. Contém a lógica de negócios, serviços e mapeadores.
+
+### Domain
+Define entidades, agregados, serviços de domínio e contratos. Representa o modelo de negócios central e é independente de tecnologia específica.
+
+### Infrastructure
+Implementa os contratos definidos no domínio. Inclui repositórios, integrações externas, configuração de banco de dados e serviços de suporte como mensageria e segurança.
+
+### Presentation
+Recebe requisições HTTP e envia respostas. Contém os controladores que expõem a API da aplicação e gerenciam a autenticação e autorização.
+
+## Dependências da Aplicação
+
+A aplicação utiliza as seguintes dependências conforme especificado no arquivo `pom.xml`:
+
+- **Spring Boot Starter Data JPA**
+  - `org.springframework.boot:spring-boot-starter-data-jpa`
+
+- **Spring Boot Starter Security**
+  - `org.springframework.boot:spring-boot-starter-security`
+
+- **Spring Boot Starter Web**
+  - `org.springframework.boot:spring-boot-starter-web`
+
+- **Spring Boot Starter Validation**
+  - `org.springframework.boot:spring-boot-starter-validation`
+
+- **Lombok**
+  - `org.projectlombok:lombok`
+
+- **Spring Boot Starter Test**
+  - `org.springframework.boot:spring-boot-starter-test`
+
+- **Spring Security Test**
+  - `org.springframework.security:spring-security-test`
+
+- **PostgreSQL JDBC Driver**
+  - `org.postgresql:postgresql`
+
+- **Springfox Boot Starter**
+  - `io.springfox:springfox-boot-starter`
+
+- **Spring Boot DevTools**
+  - `org.springframework.boot:spring-boot-devtools`
+
+- **Flyway Core**
+  - `org.flywaydb:flyway-core`
+
+- **Flyway PostgreSQL**
+  - `org.flywaydb:flyway-database-postgresql`
+
+- **Java JWT**
+  - `com.auth0:java-jwt`
+
+- **Springdoc OpenAPI WebMVC UI Starter**
+  - `org.springdoc:springdoc-openapi-starter-webmvc-ui`
+
+- **Spring Boot Starter AMQP**
+  - `org.springframework.boot:spring-boot-starter-amqp`
+
+- **Spring Rabbit Test**
+  - `org.springframework.amqp:spring-rabbit-test`
+
+
+
 # Como Executar a Aplicação
 
 A aplicação acompanha um arquivo `docker-compose.yml` que permite a execução em um ambiente Docker.
